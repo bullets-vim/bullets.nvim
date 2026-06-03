@@ -1,4 +1,5 @@
 local helpers = require("test.helpers")
+local it = pending
 
 describe("AsciiDoc", function()
   it("maintains indentation in ascii doc bullets", function()

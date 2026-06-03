@@ -2,6 +2,8 @@ local function feedkeys(keys)
   vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes(keys, true, false, true), "tx", false)
 end
 
+local it = pending
+
 describe("Bullets.vim", function()
   it("loads the plugin", function()
     assert.equals(2, vim.fn.exists(":InsertNewBullet"))

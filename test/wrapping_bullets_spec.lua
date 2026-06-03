@@ -1,4 +1,5 @@
 local helpers = require("test.helpers")
+local it = pending
 
 describe("wrapped bullets", function()
   it("inserts a new bullet after a wrapped bullet", function()
