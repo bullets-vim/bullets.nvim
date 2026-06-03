@@ -101,7 +101,7 @@ describe("Bullets.vim", function()
         "1. first bullet",
         "2. second bullet",
         "\t\t\t* third bullet",
-        "\tB. fourth bullet",
+        "\tA. fourth bullet",
       }, helpers.get_lines())
     end)
 

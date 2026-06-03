@@ -32,6 +32,7 @@ end
 -- Resets bullets.nvim to the plugin defaults used by the specs.
 -- Call in before_each for any describe block that mutates config.
 function M.reset_config()
+  vim.g.bullets_line_spacing = nil
   require("bullets").setup({
     enabled_file_types = { "markdown", "text", "gitcommit", "scratch" },
     enable_in_empty_buffers = true,

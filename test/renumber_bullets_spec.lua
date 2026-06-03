@@ -1,5 +1,4 @@
 local helpers = require("test.helpers")
-local it = pending
 
 describe("re-numbering", function()
   before_each(function()
@@ -57,7 +56,7 @@ describe("re-numbering", function()
   end)
 
   it("renumbers a nested list", function()
-    vim.g.bullets_line_spacing = 2
+    require("bullets").setup({ line_spacing = 2 })
     helpers.new_buffer({
       "# Hello there",
       "0. zero bullet",
@@ -181,7 +180,7 @@ describe("re-numbering", function()
   end)
 
   it("visually renumbers a nested list", function()
-    vim.g.bullets_line_spacing = 2
+    require("bullets").setup({ line_spacing = 2 })
     helpers.new_buffer({
       "# Hello there",
       "0. zero bullet",
