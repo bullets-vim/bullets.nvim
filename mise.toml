@@ -4,6 +4,7 @@ dprint = "latest"
 gitleaks = "latest"
 lefthook = "latest"
 neovim = "latest"
+"npm:@kitlangton/stack" = "0.1.5"
 
 [hooks]
 postinstall = "lefthook install"
