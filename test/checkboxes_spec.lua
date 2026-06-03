@@ -105,6 +105,25 @@ describe("checkboxes", function()
       }, helpers.get_lines())
     end)
 
+    it("does not toggle checkboxes after a blank separator", function()
+      helpers.new_buffer({
+        "# Hello there",
+        "- [ ] first bullet",
+        "  - [ ] second bullet",
+        "",
+        "  - [ ] separate bullet",
+      })
+      helpers.feedkeys("ggj")
+      vim.cmd("ToggleCheckbox")
+      assert.are.same({
+        "# Hello there",
+        "- [X] first bullet",
+        "  - [X] second bullet",
+        "",
+        "  - [ ] separate bullet",
+      }, helpers.get_lines())
+    end)
+
     it("toggle a bullet and calculate completion", function()
       helpers.new_buffer({
         "# Hello there",

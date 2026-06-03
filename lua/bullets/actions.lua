@@ -1053,16 +1053,24 @@ end
 local function set_descendant_checkboxes(lnum, bullet, marker)
   local line_count = vim.api.nvim_buf_line_count(0)
   for row = lnum + 1, line_count do
-    local item = checkbox_item(row)
-    if item and item.bullet then
-      if #item.bullet.indent <= #bullet.indent then
+    local descendant_bullet, line = bullet_at(row)
+    if line:match("^%s*$") then
+      break
+    end
+
+    if descendant_bullet then
+      if #descendant_bullet.indent <= #bullet.indent then
         break
       end
+
+      local item = checkbox_item(row)
       if item.checkbox then
         item.checkbox.marker = marker
         item.checkbox.index = checkbox_marker_index(marker, item.checkbox.markers)
         set_checkbox_marker(row, item.bullet, item.checkbox, marker)
       end
+    elseif not wrapped_owner(row, line) then
+      break
     end
   end
 end
