@@ -65,4 +65,24 @@ describe("wrapped bullets", function()
       "do that",
     }, helpers.get_lines())
   end)
+
+  active_it("does not insert wrapped bullets after whitespace-only separators", function()
+    helpers.new_buffer({
+      "# Hello there",
+      "- do this",
+      "  this is the second line of the first bullet",
+      "  ",
+      "  no bullets after this line",
+    })
+    helpers.feedkeys("A<CR>")
+    helpers.feedkeys("ido that<Esc>")
+    assert.are.same({
+      "# Hello there",
+      "- do this",
+      "  this is the second line of the first bullet",
+      "  ",
+      "  no bullets after this line",
+      "do that",
+    }, helpers.get_lines())
+  end)
 end)

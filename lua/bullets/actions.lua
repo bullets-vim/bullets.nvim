@@ -24,7 +24,7 @@ local function parse_static(line)
   end
   if not marker then
     indent, marker, spacing, text = line:match("^(%s*)([%*.]+)(%s+)(.*)$")
-    if marker and not (marker:match("^%*+$") or marker:match("^%.+$")) then
+    if marker and (marker == "*" or not (marker:match("^%*+$") or marker:match("^%.+$"))) then
       marker = nil
     end
   end
@@ -42,7 +42,7 @@ local function parse_static(line)
 end
 
 local function parse_standard(line)
-  local indent, marker, spacing, text = line:match("^(%s*)([-+])(%s+)(.*)$")
+  local indent, marker, spacing, text = line:match("^(%s*)([-*+])(%s+)(.*)$")
   if not marker then
     return nil
   end
@@ -280,7 +280,7 @@ local function wrapped_owner(lnum, line)
   local current_indent = #(line:match("^%s*") or "")
   for row = lnum - 1, 1, -1 do
     local previous_line = vim.api.nvim_buf_get_lines(0, row - 1, row, false)[1]
-    if previous_line == "" then
+    if previous_line:match("^%s*$") then
       return nil
     end
 
