@@ -1,8 +1,13 @@
 local helpers = require("test.helpers")
+local active_it = it
 local it = pending
 
 describe("wrapped bullets", function()
-  it("inserts a new bullet after a wrapped bullet", function()
+  before_each(function()
+    helpers.reset_config()
+  end)
+
+  active_it("inserts a new bullet after a wrapped bullet", function()
     helpers.test_bullet_inserted("do that", {
       "# Hello there",
       "- do this",
@@ -15,7 +20,24 @@ describe("wrapped bullets", function()
     })
   end)
 
-  it("does not insert wrapped bullets unnecessarily", function()
+  active_it("does not insert wrapped bullets when disabled", function()
+    require("bullets").setup({ enable_wrapped_lines = false })
+    helpers.new_buffer({
+      "# Hello there",
+      "- do this",
+      "  this is the second line of the first bullet",
+    })
+    helpers.feedkeys("A<CR>")
+    helpers.feedkeys("ido that<Esc>")
+    assert.are.same({
+      "# Hello there",
+      "- do this",
+      "  this is the second line of the first bullet",
+      "do that",
+    }, helpers.get_lines())
+  end)
+
+  active_it("does not insert wrapped bullets unnecessarily", function()
     -- When <CR> is pressed on a non-bullet line the plugin defers the actual
     -- newline via feedkeys('n'). Using two separate feedkeys calls ensures the
     -- deferred CR fires (the 'x' flag drains it) before we type the next text.
