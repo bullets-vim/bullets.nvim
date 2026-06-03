@@ -217,7 +217,8 @@ describe("Bullets.vim", function()
         }, helpers.get_lines())
       end)
 
-      it("deletes the last bullet if it is empty", function()
+      active_it("deletes the last bullet if it is empty", function()
+        require("bullets").setup({ delete_last_bullet_if_empty = 1 })
         helpers.new_buffer({
           "# Hello there",
           "- this is the first bullet",
@@ -235,8 +236,8 @@ describe("Bullets.vim", function()
         }, lines)
       end)
 
-      it("promote the last bullet when configured to", function()
-        vim.g.bullets_delete_last_bullet_if_empty = 2
+      active_it("promotes the last bullet when configured to", function()
+        require("bullets").setup({ delete_last_bullet_if_empty = 2 })
         helpers.new_buffer({
           "# Hello there",
           "- this is the first bullet",
@@ -258,8 +259,8 @@ describe("Bullets.vim", function()
         }, lines)
       end)
 
-      it("does not delete the last bullet when configured not to", function()
-        vim.g.bullets_delete_last_bullet_if_empty = 0
+      active_it("does not delete the last bullet when configured not to", function()
+        require("bullets").setup({ delete_last_bullet_if_empty = 0 })
         helpers.new_buffer({
           "# Hello there",
           "- this is the first bullet",
@@ -278,6 +279,81 @@ describe("Bullets.vim", function()
           "- this is the first bullet",
           "- ",
         }, lines)
+      end)
+
+      active_it("adds configured blank spacing before the next bullet", function()
+        require("bullets").setup({ line_spacing = 2 })
+        helpers.test_bullet_inserted("second bullet", {
+          "# Hello there",
+          "1. first bullet",
+        }, {
+          "# Hello there",
+          "1. first bullet",
+          "",
+          "2. second bullet",
+        })
+      end)
+
+      active_it("can disable right padding for ordered bullets", function()
+        require("bullets").setup({ pad_right = false })
+        helpers.test_bullet_inserted("second bullet", {
+          "# Hello there",
+          "9.  first bullet",
+        }, {
+          "# Hello there",
+          "9.  first bullet",
+          "10. second bullet",
+        })
+      end)
+
+      active_it("indents after a line ending in a colon", function()
+        require("bullets").setup({ auto_indent_after_colon = true })
+        helpers.new_buffer({
+          "# Hello there",
+          "a. first bullet",
+        })
+        helpers.feedkeys("A<CR>second bullet:<CR>third bullet<CR>fourth bullet<Esc>")
+        assert.are.same({
+          "# Hello there",
+          "a. first bullet",
+          "b. second bullet:",
+          "  i. third bullet",
+          "  ii. fourth bullet",
+        }, helpers.get_lines())
+      end)
+
+      active_it("indents after a line ending in a fullwidth colon", function()
+        require("bullets").setup({ auto_indent_after_colon = true })
+        helpers.new_buffer({
+          "# Hello there",
+          "a. first bullet",
+        })
+        helpers.feedkeys("A<CR>second bullet：<CR>third bullet<Esc>")
+        assert.are.same({
+          "# Hello there",
+          "a. first bullet",
+          "b. second bullet：",
+          "  i. third bullet",
+        }, helpers.get_lines())
+      end)
+
+      active_it("can disable colon auto indentation", function()
+        require("bullets").setup({ auto_indent_after_colon = false })
+        helpers.test_bullet_inserted("second bullet:", {
+          "# Hello there",
+          "a. first bullet",
+        }, {
+          "# Hello there",
+          "a. first bullet",
+          "b. second bullet:",
+        })
+        helpers.feedkeys("A<CR>third bullet<Esc>")
+        assert.are.same({
+          "# Hello there",
+          "a. first bullet",
+          "b. second bullet:",
+          "c. third bullet",
+        }, helpers.get_lines())
       end)
 
       active_it("toggles roman numeral bullets with enable_roman_list", function()

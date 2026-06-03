@@ -215,9 +215,10 @@ local function split_line()
   vim.cmd.startinsert()
 end
 
-local function insert_line(lnum, line)
-  vim.api.nvim_buf_set_lines(0, lnum, lnum, false, { line })
-  vim.api.nvim_win_set_cursor(0, { lnum + 1, #line })
+local function insert_lines(lnum, lines, cursor_index)
+  vim.api.nvim_buf_set_lines(0, lnum, lnum, false, lines)
+  local line = lines[cursor_index]
+  vim.api.nvim_win_set_cursor(0, { lnum + cursor_index, #line })
 end
 
 local function pad_right(prefix, width)
@@ -270,6 +271,124 @@ local function next_prefix(bullet)
 
   local prefix = marker .. bullet.closure .. " "
   return bullet.indent .. pad_right(prefix, #bullet.marker + #bullet.closure + #bullet.spacing)
+end
+
+local function current_prefix(bullet)
+  if bullet.type == "std" or bullet.type == "static" then
+    return bullet.indent .. bullet.marker .. bullet.spacing
+  end
+
+  local prefix = bullet.marker .. bullet.closure .. " "
+  return bullet.indent .. pad_right(prefix, #bullet.marker + #bullet.closure + #bullet.spacing)
+end
+
+local function indent_unit()
+  if not vim.o.expandtab then
+    return "\t"
+  end
+
+  return string.rep(" ", vim.o.shiftwidth > 0 and vim.o.shiftwidth or vim.o.tabstop)
+end
+
+local function style_for_bullet(bullet)
+  if bullet.type == "std" then
+    return "std" .. bullet.marker
+  end
+  if bullet.type == "static" then
+    return bullet.marker
+  end
+  if bullet.type == "num" then
+    return "num"
+  end
+  if bullet.type == "abc" then
+    return bullet.marker == bullet.marker:lower() and "abc" or "ABC"
+  end
+  if bullet.type == "rom" then
+    return bullet.marker == bullet.marker:lower() and "rom" or "ROM"
+  end
+
+  return nil
+end
+
+local function bullet_for_style(style, indent)
+  if style == "num" then
+    return { type = "num", indent = indent, marker = "1", closure = ".", spacing = " ", text = "" }
+  end
+  if style == "abc" then
+    return { type = "abc", indent = indent, marker = "a", closure = ".", spacing = " ", text = "" }
+  end
+  if style == "ABC" then
+    return { type = "abc", indent = indent, marker = "A", closure = ".", spacing = " ", text = "" }
+  end
+  if style == "rom" then
+    return { type = "rom", indent = indent, marker = "i", closure = ".", spacing = " ", text = "" }
+  end
+  if style == "ROM" then
+    return { type = "rom", indent = indent, marker = "I", closure = ".", spacing = " ", text = "" }
+  end
+
+  local marker = style:match("^std(.+)$")
+  if marker then
+    return { type = "std", indent = indent, marker = marker, spacing = " ", text = "" }
+  end
+
+  return nil
+end
+
+local function child_bullet(bullet)
+  local current_style = style_for_bullet(bullet)
+  if not current_style then
+    return nil
+  end
+
+  for index, style in ipairs(config.options.outline_levels) do
+    if style == current_style then
+      local next_style = config.options.outline_levels[index + 1]
+      return next_style and bullet_for_style(next_style, bullet.indent .. indent_unit()) or nil
+    end
+  end
+
+  return nil
+end
+
+local function ends_with_colon(text)
+  return text:sub(-1) == ":" or text:sub(-3) == "："
+end
+
+local function spaced_lines(prefix)
+  local lines = {}
+  for _ = 2, config.options.line_spacing do
+    table.insert(lines, "")
+  end
+  table.insert(lines, prefix)
+  return lines, #lines
+end
+
+local function delete_empty_bullet(lnum, bullet, mode)
+  local behavior = config.options.delete_last_bullet_if_empty
+  if behavior == 0 then
+    if mode == "n" then
+      open_line_below()
+    else
+      split_line()
+    end
+    return true
+  end
+
+  if behavior == 2 and bullet.indent ~= "" then
+    local promoted = vim.deepcopy(bullet)
+    promoted.indent = promoted.indent
+      :gsub("\t$", "")
+      :gsub(string.rep(" ", vim.o.shiftwidth > 0 and vim.o.shiftwidth or vim.o.tabstop) .. "$", "")
+    local prefix = next_prefix(promoted)
+    vim.api.nvim_set_current_line(prefix or "")
+    vim.api.nvim_win_set_cursor(0, { lnum, #(prefix or "") })
+    return true
+  end
+
+  vim.api.nvim_set_current_line(bullet.indent)
+  vim.api.nvim_win_set_cursor(0, { lnum, #bullet.indent })
+  return true
 end
 
 local function wrapped_owner(lnum, line)
@@ -328,7 +447,19 @@ function M.insert_new_bullet()
     return ""
   end
 
-  local prefix = next_prefix(bullet)
+  if bullet.text == "" and delete_empty_bullet(lnum, bullet, mode) then
+    return ""
+  end
+
+  local prefix
+  if config.options.auto_indent_after_colon and ends_with_colon(bullet.text) then
+    local child = child_bullet(bullet)
+    if child then
+      prefix = current_prefix(child)
+    end
+  end
+
+  prefix = prefix or next_prefix(bullet)
   if not prefix then
     if mode == "n" then
       open_line_below()
@@ -339,13 +470,8 @@ function M.insert_new_bullet()
     return ""
   end
 
-  if mode ~= "n" then
-    insert_line(lnum, prefix)
-    vim.cmd.startinsert({ bang = true })
-    return ""
-  end
-
-  insert_line(lnum, prefix)
+  local lines, cursor_index = spaced_lines(prefix)
+  insert_lines(lnum, lines, cursor_index)
   vim.cmd.startinsert({ bang = true })
 
   return ""
