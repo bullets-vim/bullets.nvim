@@ -256,6 +256,8 @@ local function prefix_width(bullet)
   return #bullet.indent + #bullet.marker + #bullet.spacing
 end
 
+local current_prefix
+
 local function next_prefix(bullet)
   local marker = next_marker(bullet)
   if not marker then
@@ -273,13 +275,110 @@ local function next_prefix(bullet)
   return bullet.indent .. pad_right(prefix, #bullet.marker + #bullet.closure + #bullet.spacing)
 end
 
-local function current_prefix(bullet)
+function current_prefix(bullet)
   if bullet.type == "std" or bullet.type == "static" then
     return bullet.indent .. bullet.marker .. bullet.spacing
   end
 
   local prefix = bullet.marker .. bullet.closure .. " "
   return bullet.indent .. pad_right(prefix, #bullet.marker + #bullet.closure + #bullet.spacing)
+end
+
+local function checkbox_markers()
+  local markers = {}
+  local configured = config.options.checkbox_markers or ""
+
+  for index = 0, vim.fn.strchars(configured) - 1 do
+    table.insert(markers, vim.fn.strcharpart(configured, index, 1))
+  end
+
+  return markers
+end
+
+local function checkbox_marker_index(marker, markers)
+  for index, configured in ipairs(markers) do
+    if marker == configured then
+      return index
+    end
+  end
+
+  if marker == " " then
+    return 1
+  end
+
+  local checked = markers[#markers]
+  if checked and (marker:lower() == checked:lower() or marker:lower() == "x") then
+    return #markers
+  end
+
+  return nil
+end
+
+local function parse_checkbox_text(text)
+  local marker, spacing, rest = text:match("^%[([^%]]+)%](%s*)(.*)$")
+  if not marker then
+    return nil
+  end
+
+  local markers = checkbox_markers()
+  local index = checkbox_marker_index(marker, markers)
+  if not index then
+    return nil
+  end
+
+  return {
+    marker = marker,
+    spacing = spacing,
+    rest = rest,
+    index = index,
+    markers = markers,
+  }
+end
+
+local function checkbox_unchecked_marker()
+  return checkbox_markers()[1]
+end
+
+local function checkbox_checked_marker(markers)
+  return markers[#markers]
+end
+
+local function checkbox_state(checkbox)
+  if checkbox.index == 1 then
+    return "unchecked"
+  end
+  if checkbox.index == #checkbox.markers then
+    return "checked"
+  end
+
+  return "partial"
+end
+
+local function checkbox_text(marker, checkbox)
+  return "[" .. marker .. "]" .. checkbox.spacing .. checkbox.rest
+end
+
+local function set_checkbox_marker(lnum, bullet, checkbox, marker)
+  vim.api.nvim_buf_set_lines(0, lnum - 1, lnum, false, { current_prefix(bullet) .. checkbox_text(marker, checkbox) })
+end
+
+local function checkbox_continuation_prefix(bullet, prefix)
+  local checkbox = parse_checkbox_text(bullet.text)
+  local unchecked = checkbox and checkbox_unchecked_marker()
+  if not unchecked then
+    return prefix
+  end
+
+  return prefix .. "[" .. unchecked .. "]" .. checkbox.spacing
+end
+
+local function is_empty_bullet_text(text)
+  if text == "" then
+    return true
+  end
+
+  local checkbox = parse_checkbox_text(text)
+  return checkbox and checkbox.rest == ""
 end
 
 local function indent_unit()
@@ -469,8 +568,19 @@ local function change_line_level(lnum, direction)
     return false
   end
 
+  local checkbox = parse_checkbox_text(bullet.text)
+  if checkbox then
+    next_bullet.marker = bullet.marker
+    next_bullet.type = bullet.type
+    next_bullet.closure = bullet.closure
+    next_bullet.spacing = bullet.spacing
+  end
+
   local prefix = current_prefix(next_bullet)
   vim.api.nvim_buf_set_lines(0, lnum - 1, lnum, false, { prefix .. bullet.text })
+  if checkbox then
+    prefix = prefix .. "[" .. checkbox.marker .. "]" .. checkbox.spacing
+  end
   vim.api.nvim_win_set_cursor(0, { lnum, #prefix })
   return true
 end
@@ -565,6 +675,9 @@ local function delete_empty_bullet(lnum, bullet, mode)
   if behavior == 2 and bullet.indent ~= "" then
     local parent = previous_parent_bullet(lnum, bullet.indent)
     local prefix = parent and next_prefix(parent) or ""
+    if prefix then
+      prefix = checkbox_continuation_prefix(bullet, prefix)
+    end
     vim.api.nvim_set_current_line(prefix or "")
     vim.api.nvim_win_set_cursor(0, { lnum, #(prefix or "") })
     return true
@@ -810,7 +923,7 @@ function M.insert_new_bullet()
     return ""
   end
 
-  if bullet.text == "" and delete_empty_bullet(lnum, bullet, mode) then
+  if is_empty_bullet_text(bullet.text) and delete_empty_bullet(lnum, bullet, mode) then
     return ""
   end
 
@@ -832,6 +945,8 @@ function M.insert_new_bullet()
     feed_cr()
     return ""
   end
+
+  prefix = checkbox_continuation_prefix(bullet, prefix)
 
   local lines, cursor_index = spaced_lines(prefix)
   insert_lines(lnum, lines, cursor_index)
@@ -856,9 +971,127 @@ function M.renumber_selection(first, last)
   end
 end
 
-function M.toggle_checkbox() end
+local function checkbox_item(lnum)
+  local bullet, line = bullet_at(lnum)
+  if not bullet then
+    return nil, line
+  end
 
-function M.recompute_checkboxes() end
+  local checkbox = parse_checkbox_text(bullet.text)
+  if not checkbox then
+    return { lnum = lnum, bullet = bullet, checkbox = nil }, line
+  end
+
+  return { lnum = lnum, bullet = bullet, checkbox = checkbox, children = {} }, line
+end
+
+local function checkbox_tree(first, last)
+  local items = {}
+  local stack = {}
+
+  for lnum = first, last do
+    local item = checkbox_item(lnum)
+    if item and item.checkbox then
+      local indent = #item.bullet.indent
+      while #stack > 0 and #stack[#stack].bullet.indent >= indent do
+        table.remove(stack)
+      end
+      if #stack > 0 then
+        table.insert(stack[#stack].children, item)
+      end
+      table.insert(stack, item)
+      table.insert(items, item)
+    end
+  end
+
+  return items
+end
+
+local function partial_marker(markers, checked, total)
+  if checked == 0 then
+    return markers[1]
+  end
+  if checked == total then
+    return checkbox_checked_marker(markers)
+  end
+
+  local index = math.floor((checked / total) * (#markers - 2)) + 2
+  index = math.max(2, math.min(#markers - 1, index))
+  return markers[index]
+end
+
+local function recompute_items(items)
+  for index = #items, 1, -1 do
+    local item = items[index]
+    if #item.children > 0 then
+      local checked = 0
+      for _, child in ipairs(item.children) do
+        if checkbox_state(child.checkbox) == "checked" then
+          checked = checked + 1
+        end
+      end
+
+      local marker = partial_marker(item.checkbox.markers, checked, #item.children)
+      item.checkbox.marker = marker
+      item.checkbox.index = checkbox_marker_index(marker, item.checkbox.markers)
+      set_checkbox_marker(item.lnum, item.bullet, item.checkbox, marker)
+    elseif checkbox_state(item.checkbox) == "partial" then
+      local marker = item.checkbox.markers[1]
+      item.checkbox.marker = marker
+      item.checkbox.index = 1
+      set_checkbox_marker(item.lnum, item.bullet, item.checkbox, marker)
+    end
+  end
+end
+
+local function checkbox_range(lnum)
+  local first = first_bullet_line(lnum)
+  local last = last_bullet_line(lnum)
+  return first > 0 and first or lnum, last > 0 and last or lnum
+end
+
+local function set_descendant_checkboxes(lnum, bullet, marker)
+  local line_count = vim.api.nvim_buf_line_count(0)
+  for row = lnum + 1, line_count do
+    local item = checkbox_item(row)
+    if item and item.bullet then
+      if #item.bullet.indent <= #bullet.indent then
+        break
+      end
+      if item.checkbox then
+        item.checkbox.marker = marker
+        item.checkbox.index = checkbox_marker_index(marker, item.checkbox.markers)
+        set_checkbox_marker(row, item.bullet, item.checkbox, marker)
+      end
+    end
+  end
+end
+
+function M.toggle_checkbox()
+  local lnum = vim.api.nvim_win_get_cursor(0)[1]
+  local item = checkbox_item(lnum)
+  if not item or not item.checkbox then
+    return
+  end
+
+  local markers = item.checkbox.markers
+  local marker = checkbox_state(item.checkbox) == "checked" and markers[1] or checkbox_checked_marker(markers)
+  item.checkbox.marker = marker
+  item.checkbox.index = checkbox_marker_index(marker, markers)
+  set_checkbox_marker(lnum, item.bullet, item.checkbox, marker)
+
+  if config.options.nested_checkboxes then
+    set_descendant_checkboxes(lnum, item.bullet, marker)
+    local first, last = checkbox_range(lnum)
+    recompute_items(checkbox_tree(first, last))
+  end
+end
+
+function M.recompute_checkboxes()
+  local lnum = vim.api.nvim_win_get_cursor(0)[1]
+  local first, last = checkbox_range(lnum)
+  recompute_items(checkbox_tree(first, last))
+end
 
 function M.demote()
   return change_current_line_level("demote")

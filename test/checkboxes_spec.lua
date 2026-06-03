@@ -1,5 +1,4 @@
 local helpers = require("test.helpers")
-local it = pending
 
 describe("checkboxes", function()
   describe("inserting checkboxes", function()
@@ -179,7 +178,7 @@ describe("checkboxes", function()
     end)
 
     it("adds and toggles bullets using UTF characters", function()
-      vim.g.bullets_checkbox_markers = "✗○◐●✓"
+      require("bullets").setup({ checkbox_markers = "✗○◐●✓" })
       -- Ensure <C-t> produces tabs (not spaces) regardless of user config
       vim.opt.expandtab = false
       helpers.new_buffer({
@@ -215,7 +214,7 @@ describe("checkboxes", function()
     end)
 
     it("recomputes checkboxes recursively on RecomputeCheckboxes", function()
-      vim.g.bullets_checkbox_markers = " .¼½¾X"
+      require("bullets").setup({ checkbox_markers = " .¼½¾X" })
       helpers.new_buffer({
         "# Hello there",
         "- [ ] EXPECTED: ¼",
@@ -268,7 +267,7 @@ describe("checkboxes", function()
     end)
 
     it("recomputes checkboxes correctly on reindents", function()
-      vim.g.bullets_checkbox_markers = " /X"
+      require("bullets").setup({ checkbox_markers = " /X" })
       helpers.new_buffer({
         "# Hello there",
         "- [X] parent bullet",
@@ -285,7 +284,7 @@ describe("checkboxes", function()
       }, helpers.get_lines())
 
       -- Phase 2: press CR on the new empty bullet, which should dedent/remove it
-      vim.g.bullets_delete_last_bullet_if_empty = 2
+      require("bullets").setup({ checkbox_markers = " /X", delete_last_bullet_if_empty = 2 })
       helpers.feedkeys("A<CR>")
       vim.cmd("RecomputeCheckboxes")
       assert.are.same({
@@ -297,7 +296,7 @@ describe("checkboxes", function()
     end)
 
     it("handles skip-level checkbox trees", function()
-      vim.g.bullets_checkbox_markers = " /X"
+      require("bullets").setup({ checkbox_markers = " /X" })
       helpers.new_buffer({
         "# Hello there",
         "- [X] parent bullet (EXPECTED: /)",
