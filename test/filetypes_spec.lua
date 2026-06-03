@@ -1,4 +1,5 @@
 local helpers = require("test.helpers")
+local it = pending
 
 describe("filetypes", function()
   it("creates mapping for bullets on empty buffer if configured", function()

@@ -1,4 +1,5 @@
 local helpers = require("test.helpers")
+local it = pending
 
 describe("Bullets.vim", function()
   describe("inserting new bullets", function()

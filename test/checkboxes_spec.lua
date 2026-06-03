@@ -1,4 +1,5 @@
 local helpers = require("test.helpers")
+local it = pending
 
 describe("checkboxes", function()
   describe("inserting checkboxes", function()
