@@ -2,14 +2,12 @@ local function feedkeys(keys)
   vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes(keys, true, false, true), "tx", false)
 end
 
-local it = pending
-
 describe("Bullets.vim", function()
   it("loads the plugin", function()
     assert.equals(2, vim.fn.exists(":InsertNewBullet"))
   end)
 
-  it("inserts a new bullet on <CR>", function()
+  pending("inserts a new bullet on <CR>", function()
     vim.cmd("enew")
     vim.bo.filetype = "text"
     vim.api.nvim_buf_set_lines(0, 0, -1, false, { "- first item" })
