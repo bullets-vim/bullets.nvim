@@ -78,7 +78,7 @@ describe("Bullets.vim", function()
         )
       end)
 
-      it("adds a new numeric bullet if the previous line had numeric bullet", function()
+      active_it("adds a new numeric bullet if the previous line had numeric bullet", function()
         helpers.test_bullet_inserted(
           "second bullet",
           { "# Hello there", "1) this is the first bullet" },
@@ -86,7 +86,7 @@ describe("Bullets.vim", function()
         )
       end)
 
-      it("adds a new numeric bullet with right padding", function()
+      active_it("adds a new numeric bullet with right padding", function()
         helpers.test_bullet_inserted(
           "second bullet",
           { "# Hello there", "1.  this is the first bullet" },
@@ -94,8 +94,8 @@ describe("Bullets.vim", function()
         )
       end)
 
-      it("maintains total bullet width from 9. to 10. with reduced padding", function()
-        vim.g.bullets_renumber_on_change = 0
+      active_it("maintains total bullet width from 9. to 10. with reduced padding", function()
+        require("bullets").setup({ renumber_on_change = false })
         helpers.test_bullet_inserted(
           "second bullet",
           { "# Hello there", "9.  this is the first bullet" },
@@ -111,7 +111,7 @@ describe("Bullets.vim", function()
         )
       end)
 
-      it("does not insert a new numeric bullet for decimal numbers", function()
+      active_it("does not insert a new numeric bullet for decimal numbers", function()
         -- "3.14159 is an approximation of pi." is not a bullet line
         -- CR on non-bullet line is deferred, use two-call pattern
         helpers.new_buffer({
@@ -127,8 +127,8 @@ describe("Bullets.vim", function()
         }, helpers.get_lines())
       end)
 
-      it("adds a new roman numeral bullet", function()
-        vim.g.bullets_pad_right = 0
+      active_it("adds a new roman numeral bullet", function()
+        require("bullets").setup({ pad_right = false })
         helpers.new_buffer({
           "# Hello there",
           "I. this is the first bullet",
@@ -144,8 +144,8 @@ describe("Bullets.vim", function()
         }, helpers.get_lines())
       end)
 
-      it("adds a new lowercase roman numeral bullet", function()
-        vim.g.bullets_pad_right = 0
+      active_it("adds a new lowercase roman numeral bullet", function()
+        require("bullets").setup({ pad_right = false })
         helpers.new_buffer({
           "# Hello there",
           "i. this is the first bullet",
@@ -161,7 +161,7 @@ describe("Bullets.vim", function()
         }, helpers.get_lines())
       end)
 
-      it("does not confuse with the 'ignorecase' option", function()
+      active_it("does not confuse with the 'ignorecase' option", function()
         vim.cmd("set ignorecase")
         -- "Vi." is mixed case / not a valid roman numeral bullet → non-bullet CR
         helpers.new_buffer({
@@ -177,7 +177,7 @@ describe("Bullets.vim", function()
         }, helpers.get_lines())
       end)
 
-      it("does not insert a new roman bullets without following spaces", function()
+      active_it("does not insert a new roman bullets without following spaces", function()
         -- "m.example.com is a site." has no space after the dot → not a bullet
         helpers.new_buffer({
           "# Hello there",
@@ -192,7 +192,7 @@ describe("Bullets.vim", function()
         }, helpers.get_lines())
       end)
 
-      it("does not insert a new roman bullets for invalid roman numbers", function()
+      active_it("does not insert a new roman bullets for invalid roman numbers", function()
         -- "LID." is not a valid roman numeral, so no bullet continuation
         -- However lines typed after non-bullet lines also get no bullet
         helpers.new_buffer({
@@ -280,10 +280,9 @@ describe("Bullets.vim", function()
         }, lines)
       end)
 
-      it("toggles roman numeral bullets with g:bullets_enable_roman_list", function()
+      active_it("toggles roman numeral bullets with enable_roman_list", function()
         -- Disable alpha lists to isolate test to roman numerals
-        vim.g.bullets_max_alpha_characters = 0
-        vim.g.bullets_enable_roman_list = 1
+        require("bullets").setup({ max_alpha_characters = 0, enable_roman_list = true })
         helpers.new_buffer({
           "# Hello there",
           "i. this is the first bullet",
@@ -291,7 +290,7 @@ describe("Bullets.vim", function()
         -- Type second and third bullets (roman numeral bullets)
         helpers.feedkeys("A<CR>second bullet<CR>third bullet<Esc>")
         -- Disable roman list mid-test
-        vim.g.bullets_enable_roman_list = 0
+        require("bullets").setup({ max_alpha_characters = 0, enable_roman_list = false })
         -- Type fourth and fifth (no roman numeral prefix now)
         -- We're in normal mode, need to append and continue
         helpers.feedkeys("A<CR>")
