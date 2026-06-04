@@ -67,21 +67,20 @@ Defaults from `lua/bullets/config.lua`:
 
 The plugin defines these commands:
 
-| Command                 | Action                                   |
-| ----------------------- | ---------------------------------------- |
-| `:InsertNewBullet`      | Insert a continued list item.            |
-| `:RenumberList`         | Renumber the current list.               |
-| `:RenumberSelection`    | Renumber the selected range.             |
-| `:ToggleCheckbox`       | Toggle the checkbox on the current item. |
-| `:RecomputeCheckboxes`  | Recompute nested checkbox states.        |
-| `:BulletDemote`         | Demote the current item.                 |
-| `:BulletPromote`        | Promote the current item.                |
-| `:BulletDemoteVisual`   | Demote the selected range.               |
-| `:BulletPromoteVisual`  | Promote the selected range.              |
-| `:SelectCheckbox`       | Select the current checkbox.             |
-| `:SelectCheckboxInside` | Select inside the current checkbox.      |
-| `:SelectBullet`         | Select the current bullet marker.        |
-| `:SelectBulletText`     | Select the current bullet text.          |
+| Command                | Action                                   |
+| ---------------------- | ---------------------------------------- |
+| `:InsertNewBullet`     | Insert a continued list item.            |
+| `:RenumberList`        | Renumber the current list.               |
+| `:RenumberSelection`   | Renumber the selected range.             |
+| `:ToggleCheckbox`      | Toggle the checkbox on the current item. |
+| `:RecomputeCheckboxes` | Recompute nested checkbox states.        |
+| `:BulletDemote`        | Demote the current item.                 |
+| `:BulletPromote`       | Promote the current item.                |
+| `:BulletDemoteVisual`  | Demote the selected range.               |
+| `:BulletPromoteVisual` | Promote the selected range.              |
+
+These selection commands are registered but not implemented yet: `:SelectCheckbox`,
+`:SelectCheckboxInside`, `:SelectBullet`, and `:SelectBulletText`.
 
 ## Mappings
 
