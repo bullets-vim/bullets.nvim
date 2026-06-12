@@ -217,13 +217,14 @@ describe("Bullets.vim", function()
         }, helpers.get_lines())
       end)
 
-      it("deletes the last bullet if it is empty", function()
+      active_it("deletes the last bullet if it is empty", function()
         helpers.new_buffer({
           "# Hello there",
           "- this is the first bullet",
         })
         -- First CR creates "- " empty bullet, second CR on empty bullet deletes it
-        helpers.feedkeys("A<CR><CR>")
+        helpers.feedkeys("A<CR>")
+        helpers.feedkeys("A<CR>")
         local lines = helpers.get_lines()
         -- Strip trailing empty lines before comparison.
         while #lines > 0 and lines[#lines] == "" do
