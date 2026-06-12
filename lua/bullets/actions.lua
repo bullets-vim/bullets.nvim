@@ -1,14 +1,13 @@
 local M = {}
 
-local function feed(keys)
-  vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes(keys, true, false, true), "n", false)
-end
-
 function M.insert_new_bullet()
   if vim.fn.mode() == "n" then
-    vim.cmd.startinsert({ bang = true })
+    local lnum = vim.api.nvim_win_get_cursor(0)[1]
+    vim.api.nvim_buf_set_lines(0, lnum, lnum, false, { "" })
+    vim.api.nvim_win_set_cursor(0, { lnum + 1, 0 })
+    vim.cmd.startinsert()
   else
-    feed("<CR>")
+    return "\r"
   end
 
   return ""

@@ -1,6 +1,7 @@
 local config = require("bullets.config")
 
 local M = {}
+M.did_setup = false
 
 local augroup = vim.api.nvim_create_augroup("bullets.nvim", { clear = true })
 
@@ -105,12 +106,11 @@ local function add_default_mappings(buf)
   map_buffer(buf, "n", leader .. "gN", "<Plug>(bullets-renumber)", { remap = true })
   map_buffer(buf, "x", leader .. "gN", "<Plug>(bullets-renumber)", { remap = true })
   map_buffer(buf, "n", leader .. "<leader>x", "<Plug>(bullets-toggle-checkbox)", { remap = true })
-  map_buffer(buf, "i", leader .. "<C-t>", "<Plug>(bullets-demote)", { remap = true })
-  map_buffer(buf, "n", leader .. ">>", "<Plug>(bullets-demote)", { remap = true })
-  map_buffer(buf, "x", leader .. ">", "<Plug>(bullets-demote)", { remap = true })
-  map_buffer(buf, "i", leader .. "<C-d>", "<Plug>(bullets-promote)", { remap = true })
-  map_buffer(buf, "n", leader .. "<<", "<Plug>(bullets-promote)", { remap = true })
-  map_buffer(buf, "x", leader .. "<", "<Plug>(bullets-promote)", { remap = true })
+end
+
+local function should_configure_buffer(buf)
+  return vim.tbl_contains(config.options.enabled_file_types, vim.bo[buf].filetype)
+    or (config.options.enable_in_empty_buffers and vim.bo[buf].filetype == "")
 end
 
 local function add_custom_mappings(buf)
@@ -151,10 +151,16 @@ local function add_autocmds()
 end
 
 function M.setup(options)
+  M.did_setup = true
   config.setup(options)
   add_commands()
   add_plug_mappings()
   add_autocmds()
+
+  local current_buf = vim.api.nvim_get_current_buf()
+  if should_configure_buffer(current_buf) then
+    configure_buffer(current_buf)
+  end
 end
 
 return M
