@@ -283,11 +283,11 @@ local function current_prefix(bullet)
 end
 
 local function indent_unit()
-  if not vim.o.expandtab then
+  if not vim.o.expandtab and vim.o.shiftwidth ~= 8 then
     return "\t"
   end
 
-  return string.rep(" ", vim.o.shiftwidth > 0 and vim.o.shiftwidth or vim.o.tabstop)
+  return string.rep(" ", vim.o.shiftwidth > 0 and vim.o.shiftwidth ~= 8 and vim.o.shiftwidth or 2)
 end
 
 local function style_for_bullet(bullet)
@@ -380,6 +380,22 @@ local function previous_bullet_with_indent(lnum, indent)
   return nil
 end
 
+local function previous_parent_bullet(lnum, indent)
+  for row = lnum - 1, 1, -1 do
+    local line = vim.api.nvim_buf_get_lines(0, row - 1, row, false)[1]
+    if line:match("^%s*$") then
+      return nil
+    end
+
+    local previous = resolve_bullet(parse_line(line), row)
+    if previous and #previous.indent < #indent and indent:sub(1, #previous.indent) == previous.indent then
+      return previous
+    end
+  end
+
+  return nil
+end
+
 local function delete_empty_bullet(lnum, bullet, mode)
   local behavior = config.options.delete_last_bullet_if_empty
   if behavior == 0 then
@@ -392,12 +408,8 @@ local function delete_empty_bullet(lnum, bullet, mode)
   end
 
   if behavior == 2 and bullet.indent ~= "" then
-    local promoted = vim.deepcopy(bullet)
-    promoted.indent = promoted.indent
-      :gsub("\t$", "")
-      :gsub(string.rep(" ", vim.o.shiftwidth > 0 and vim.o.shiftwidth or vim.o.tabstop) .. "$", "")
-    local parent = previous_bullet_with_indent(lnum, promoted.indent)
-    local prefix = next_prefix(parent or promoted)
+    local parent = previous_parent_bullet(lnum, bullet.indent)
+    local prefix = parent and next_prefix(parent) or ""
     vim.api.nvim_set_current_line(prefix or "")
     vim.api.nvim_win_set_cursor(0, { lnum, #(prefix or "") })
     return true
