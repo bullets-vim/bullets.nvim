@@ -1,5 +1,6 @@
 local helpers = require("test.helpers")
-local it = pending
+local active_it = it
+local pending_it = pending
 
 describe("Bullets.vim", function()
   describe("nested bullets", function()
@@ -12,7 +13,166 @@ describe("Bullets.vim", function()
       vim.opt.tabstop = 4
     end)
 
-    it("demotes an existing bullet", function()
+    active_it("demotes a bullet one outline level", function()
+      helpers.new_buffer({
+        "# Hello there",
+        "I. this is the first bullet",
+        "II. second bullet",
+      })
+
+      helpers.feedkeys("gg2j>>")
+
+      assert.are.same({
+        "# Hello there",
+        "I. this is the first bullet",
+        "\tA. second bullet",
+      }, helpers.get_lines())
+    end)
+
+    active_it("promotes a bullet one outline level", function()
+      helpers.new_buffer({
+        "# Hello there",
+        "I. this is the first bullet",
+        "\tA. second bullet",
+        "\tB. third bullet",
+      })
+
+      helpers.feedkeys("gg3j<<")
+
+      assert.are.same({
+        "# Hello there",
+        "I. this is the first bullet",
+        "\tA. second bullet",
+        "II. third bullet",
+      }, helpers.get_lines())
+    end)
+
+    active_it("demotes an empty bullet", function()
+      helpers.new_buffer({
+        "# Hello there",
+        "I. this is the first bullet",
+      })
+
+      helpers.feedkeys("GA<CR><C-t>second bullet<Esc>")
+
+      assert.are.same({
+        "# Hello there",
+        "I. this is the first bullet",
+        "\tA. second bullet",
+      }, helpers.get_lines())
+    end)
+
+    active_it("promotes an empty bullet", function()
+      helpers.new_buffer({
+        "# Hello there",
+        "I. this is the first bullet",
+        "\tA. second bullet",
+      })
+
+      helpers.feedkeys("GA<CR><C-d>third bullet<Esc>")
+
+      assert.are.same({
+        "# Hello there",
+        "I. this is the first bullet",
+        "\tA. second bullet",
+        "II. third bullet",
+      }, helpers.get_lines())
+    end)
+
+    active_it("uses configured outline levels", function()
+      require("bullets").setup({ outline_levels = { "num", "ABC", "std*" } })
+      helpers.new_buffer({
+        "# Hello there",
+        "1. first bullet",
+        "\tA. second bullet",
+        "\t\t* third bullet",
+        "2. fourth bullet",
+      })
+
+      vim.api.nvim_win_set_cursor(0, { 5, 0 })
+      vim.cmd("BulletDemote")
+      vim.api.nvim_win_set_cursor(0, { 3, 0 })
+      vim.cmd("BulletPromote")
+      vim.api.nvim_win_set_cursor(0, { 4, 0 })
+      vim.cmd("BulletDemote")
+
+      assert.are.same({
+        "# Hello there",
+        "1. first bullet",
+        "2. second bullet",
+        "\t\t\t* third bullet",
+        "\tB. fourth bullet",
+      }, helpers.get_lines())
+    end)
+
+    active_it("preserves the last standard outline level when demoting beyond configured levels", function()
+      helpers.new_buffer({
+        "# Hello there",
+        "\t\t\t\t\t\t\t+ ninth bullet",
+      })
+
+      vim.api.nvim_win_set_cursor(0, { 2, 0 })
+      vim.cmd("BulletDemote")
+
+      assert.are.same({
+        "# Hello there",
+        "\t\t\t\t\t\t\t\t+ ninth bullet",
+      }, helpers.get_lines())
+    end)
+
+    active_it("removes a bullet when promoting at the top outline level", function()
+      helpers.new_buffer({
+        "# Hello there",
+        "I. first bullet",
+      })
+
+      helpers.feedkeys("ggj<<")
+
+      assert.are.same({
+        "# Hello there",
+        "first bullet",
+      }, helpers.get_lines())
+    end)
+
+    active_it("promotes bullets in a visual range", function()
+      require("bullets").setup({ outline_levels = { "num", "abc", "std*" } })
+      helpers.new_buffer({
+        "# Hello there",
+        "1. first bullet",
+        "\ta. second bullet",
+        "\tb. third bullet",
+      })
+
+      vim.cmd("3,4BulletPromoteVisual")
+
+      assert.are.same({
+        "# Hello there",
+        "1. first bullet",
+        "2. second bullet",
+        "3. third bullet",
+      }, helpers.get_lines())
+    end)
+
+    active_it("demotes bullets in a visual range", function()
+      require("bullets").setup({ outline_levels = { "num", "abc", "std*" } })
+      helpers.new_buffer({
+        "# Hello there",
+        "1. first bullet",
+        "2. second bullet",
+        "3. third bullet",
+      })
+
+      vim.cmd("3,4BulletDemoteVisual")
+
+      assert.are.same({
+        "# Hello there",
+        "1. first bullet",
+        "\ta. second bullet",
+        "\tb. third bullet",
+      }, helpers.get_lines())
+    end)
+
+    pending_it("demotes an existing bullet", function()
       helpers.new_buffer({
         "# Hello there",
         "I. this is the first bullet",
@@ -54,7 +214,7 @@ describe("Bullets.vim", function()
       }, helpers.get_lines())
     end)
 
-    it("promotes an existing bullet", function()
+    pending_it("promotes an existing bullet", function()
       helpers.new_buffer({
         "# Hello there",
         "I. this is the first bullet",
@@ -94,7 +254,7 @@ describe("Bullets.vim", function()
       }, helpers.get_lines())
     end)
 
-    it("demotes an empty bullet", function()
+    pending_it("demotes an empty bullet", function()
       helpers.new_buffer({
         "# Hello there",
         "I. this is the first bullet",
@@ -108,7 +268,7 @@ describe("Bullets.vim", function()
       }, helpers.get_lines())
     end)
 
-    it("promotes an empty bullet", function()
+    pending_it("promotes an empty bullet", function()
       helpers.new_buffer({
         "# Hello there",
         "I. this is the first bullet",
@@ -124,7 +284,7 @@ describe("Bullets.vim", function()
       }, helpers.get_lines())
     end)
 
-    it("restarts numbering with multiple outlines", function()
+    pending_it("restarts numbering with multiple outlines", function()
       helpers.new_buffer({
         "# Hello there",
         "I. this is the first bullet",
@@ -153,7 +313,7 @@ describe("Bullets.vim", function()
       }, helpers.get_lines())
     end)
 
-    it("works with custom outline level definitions", function()
+    pending_it("works with custom outline level definitions", function()
       vim.g.bullets_outline_levels = { "num", "ABC", "std*" }
       helpers.new_buffer({
         "# Hello there",
@@ -192,7 +352,7 @@ describe("Bullets.vim", function()
       }, helpers.get_lines())
     end)
 
-    it("promotes and demotes from different starting levels", function()
+    pending_it("promotes and demotes from different starting levels", function()
       helpers.new_buffer({
         "# Hello there",
         "1. this is the first bullet",
@@ -230,7 +390,7 @@ describe("Bullets.vim", function()
       }, helpers.get_lines())
     end)
 
-    it("does not nest beyond defined levels", function()
+    pending_it("does not nest beyond defined levels", function()
       helpers.new_buffer({
         "# Hello there",
         "I. this is the first bullet",
@@ -262,7 +422,7 @@ describe("Bullets.vim", function()
       }, helpers.get_lines())
     end)
 
-    it("removes bullet when promoting top level bullet", function()
+    pending_it("removes bullet when promoting top level bullet", function()
       helpers.new_buffer({
         "# Hello there",
         "A. this is the first bullet",
@@ -283,7 +443,7 @@ describe("Bullets.vim", function()
       }, helpers.get_lines())
     end)
 
-    it("handle standard bullets when they are not in outline list", function()
+    pending_it("handle standard bullets when they are not in outline list", function()
       vim.g.bullets_outline_levels = { "num", "ABC" }
       helpers.new_buffer({
         "# Hello there",
@@ -306,7 +466,7 @@ describe("Bullets.vim", function()
       }, helpers.get_lines())
     end)
 
-    it("adds new nested bullets with correct alpha/roman numerals", function()
+    pending_it("adds new nested bullets with correct alpha/roman numerals", function()
       helpers.new_buffer({
         "# Hello there",
         "I. this is the first bullet",
@@ -337,7 +497,7 @@ describe("Bullets.vim", function()
       }, helpers.get_lines())
     end)
 
-    it("changes levels in visual mode", function()
+    pending_it("changes levels in visual mode", function()
       vim.g.bullets_outline_levels = { "num", "abc", "std*" }
       helpers.new_buffer({
         "# Hello there",
@@ -391,7 +551,7 @@ describe("Bullets.vim", function()
       }, helpers.get_lines())
     end)
 
-    it("add and change bullets with multiple line spacing and wrapped lines", function()
+    pending_it("add and change bullets with multiple line spacing and wrapped lines", function()
       vim.g.bullets_line_spacing = 2
       helpers.new_buffer({
         "# Hello there",
@@ -421,7 +581,7 @@ describe("Bullets.vim", function()
       }, helpers.get_lines())
     end)
 
-    it("indents after a line ending in a colon", function()
+    pending_it("indents after a line ending in a colon", function()
       vim.g.bullets_auto_indent_after_colon = 1
       helpers.new_buffer({
         "# Hello there",

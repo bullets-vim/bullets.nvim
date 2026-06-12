@@ -351,6 +351,161 @@ local function child_bullet(bullet)
   return nil
 end
 
+local function outline_index(style)
+  for index, outline_style in ipairs(config.options.outline_levels) do
+    if outline_style == style then
+      return index
+    end
+  end
+
+  return nil
+end
+
+local function indent_depth(indent)
+  local unit = indent_unit()
+  local depth = 0
+
+  while indent:sub(1, #unit) == unit do
+    depth = depth + 1
+    indent = indent:sub(#unit + 1)
+  end
+
+  return depth
+end
+
+local function parent_indent(indent)
+  local unit = indent_unit()
+  if indent:sub(-#unit) == unit then
+    return indent:sub(1, -#unit - 1)
+  end
+
+  return indent
+    :gsub("\t$", "")
+    :gsub(string.rep(" ", vim.o.shiftwidth > 0 and vim.o.shiftwidth or vim.o.tabstop) .. "$", "")
+end
+
+local function first_bullet_for_style(style, indent)
+  return bullet_for_style(style, indent)
+end
+
+local function previous_bullet_with_style(lnum, style, indent)
+  for row = lnum - 1, 1, -1 do
+    local line = vim.api.nvim_buf_get_lines(0, row - 1, row, false)[1]
+    if line == "" then
+      return nil
+    end
+
+    local bullet = resolve_bullet(parse_line(line), row)
+    if bullet and bullet.indent == indent and style_for_bullet(bullet) == style then
+      return bullet
+    end
+  end
+
+  return nil
+end
+
+local function bullet_for_level(style, indent, lnum)
+  local bullet = first_bullet_for_style(style, indent)
+  if not bullet then
+    return nil
+  end
+
+  local previous = previous_bullet_with_style(lnum, style, indent)
+  if previous then
+    local marker = next_marker(previous)
+    if marker then
+      bullet.marker = marker
+    end
+  end
+
+  return bullet
+end
+
+local function fallback_style_for_indent(indent)
+  return config.options.outline_levels[indent_depth(indent) + 1]
+end
+
+local function change_line_level(lnum, direction)
+  local line = vim.api.nvim_buf_get_lines(0, lnum - 1, lnum, false)[1]
+  local bullet = resolve_bullet(parse_line(line), lnum)
+  if not bullet then
+    return false
+  end
+
+  local style = style_for_bullet(bullet)
+  local index = style and outline_index(style) or nil
+  local next_style
+  local next_indent
+
+  if direction == "demote" then
+    next_style = index and config.options.outline_levels[index + 1]
+      or fallback_style_for_indent(bullet.indent .. indent_unit())
+    next_indent = bullet.indent .. indent_unit()
+
+    if not next_style then
+      local last_style = config.options.outline_levels[#config.options.outline_levels]
+      if last_style and last_style:match("^std") and bullet.type == "std" then
+        next_style = style
+      else
+        return false
+      end
+    end
+  else
+    if bullet.indent == "" then
+      vim.api.nvim_buf_set_lines(0, lnum - 1, lnum, false, { bullet.text })
+      vim.api.nvim_win_set_cursor(0, { lnum, 0 })
+      return true
+    end
+
+    next_indent = parent_indent(bullet.indent)
+    next_style = index and config.options.outline_levels[index - 1] or fallback_style_for_indent(next_indent)
+    if not next_style then
+      return false
+    end
+  end
+
+  local next_bullet = bullet_for_level(next_style, next_indent, lnum)
+  if not next_bullet then
+    return false
+  end
+
+  local prefix = current_prefix(next_bullet)
+  vim.api.nvim_buf_set_lines(0, lnum - 1, lnum, false, { prefix .. bullet.text })
+  vim.api.nvim_win_set_cursor(0, { lnum, #prefix })
+  return true
+end
+
+local function change_current_line_level(direction)
+  local lnum = vim.api.nvim_win_get_cursor(0)[1]
+  local changed = change_line_level(lnum, direction)
+  if changed and config.options.renumber_on_change then
+    M.renumber_list()
+  end
+  return changed
+end
+
+local function visual_range(first, last)
+  if first and last then
+    return first, last
+  end
+
+  local start_pos = vim.fn.getpos("'<")
+  local end_pos = vim.fn.getpos("'>")
+  return math.min(start_pos[2], end_pos[2]), math.max(start_pos[2], end_pos[2])
+end
+
+local function change_visual_level(direction, first, last)
+  first, last = visual_range(first, last)
+  local changed = false
+  for lnum = first, last do
+    changed = change_line_level(lnum, direction) or changed
+  end
+  if changed and config.options.renumber_on_change then
+    M.renumber_selection()
+  end
+  return changed
+end
+
 local function ends_with_colon(text)
   return text:sub(-1) == ":" or text:sub(-3) == "："
 end
@@ -514,13 +669,21 @@ function M.toggle_checkbox() end
 
 function M.recompute_checkboxes() end
 
-function M.demote() end
+function M.demote()
+  return change_current_line_level("demote")
+end
 
-function M.promote() end
+function M.promote()
+  return change_current_line_level("promote")
+end
 
-function M.demote_visual() end
+function M.demote_visual(first, last)
+  return change_visual_level("demote", first, last)
+end
 
-function M.promote_visual() end
+function M.promote_visual(first, last)
+  return change_visual_level("promote", first, last)
+end
 
 function M.select_checkbox() end
 

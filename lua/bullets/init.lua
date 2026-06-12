@@ -21,6 +21,10 @@ local function map_buffer(buf, mode, lhs, rhs, opts)
   vim.keymap.set(mode, lhs, rhs, vim.tbl_extend("force", { buffer = buf, silent = true }, opts or {}))
 end
 
+local function keys(lhs)
+  return vim.api.nvim_replace_termcodes(lhs, true, false, true)
+end
+
 local function add_commands()
   command("InsertNewBullet", function()
     actions().insert_new_bullet()
@@ -43,11 +47,11 @@ local function add_commands()
   command("BulletPromote", function()
     actions().promote()
   end)
-  command("BulletDemoteVisual", function()
-    actions().demote_visual()
+  command("BulletDemoteVisual", function(opts)
+    actions().demote_visual(opts.line1, opts.line2)
   end, { range = true })
-  command("BulletPromoteVisual", function()
-    actions().promote_visual()
+  command("BulletPromoteVisual", function(opts)
+    actions().promote_visual(opts.line1, opts.line2)
   end, { range = true })
   command("SelectCheckbox", function()
     actions().select_checkbox()
@@ -85,15 +89,11 @@ local function add_plug_mappings()
   map({ "i", "n" }, "<Plug>(bullets-demote)", function()
     actions().demote()
   end)
-  map("x", "<Plug>(bullets-demote)", function()
-    actions().demote_visual()
-  end)
+  map("x", "<Plug>(bullets-demote)", ":'<,'>BulletDemoteVisual<CR>")
   map({ "i", "n" }, "<Plug>(bullets-promote)", function()
     actions().promote()
   end)
-  map("x", "<Plug>(bullets-promote)", function()
-    actions().promote_visual()
-  end)
+  map("x", "<Plug>(bullets-promote)", ":'<,'>BulletPromoteVisual<CR>")
 end
 
 local function add_default_mappings(buf)
@@ -106,6 +106,26 @@ local function add_default_mappings(buf)
   map_buffer(buf, "n", leader .. "gN", "<Plug>(bullets-renumber)", { remap = true })
   map_buffer(buf, "x", leader .. "gN", "<Plug>(bullets-renumber)", { remap = true })
   map_buffer(buf, "n", leader .. "<leader>x", "<Plug>(bullets-toggle-checkbox)", { remap = true })
+  map_buffer(buf, "i", leader .. "<C-t>", function()
+    if not actions().demote() then
+      vim.api.nvim_feedkeys(keys("<C-t>"), "in", false)
+    end
+  end)
+  map_buffer(buf, "i", leader .. "<C-d>", function()
+    if not actions().promote() then
+      vim.api.nvim_feedkeys(keys("<C-d>"), "in", false)
+    end
+  end)
+  map_buffer(buf, "n", leader .. ">>", function()
+    if not actions().demote() then
+      vim.cmd("normal! >>")
+    end
+  end)
+  map_buffer(buf, "n", leader .. "<<", function()
+    if not actions().promote() then
+      vim.cmd("normal! <<")
+    end
+  end)
 end
 
 local function should_configure_buffer(buf)
