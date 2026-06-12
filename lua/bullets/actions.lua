@@ -364,6 +364,22 @@ local function spaced_lines(prefix)
   return lines, #lines
 end
 
+local function previous_bullet_with_indent(lnum, indent)
+  for row = lnum - 1, 1, -1 do
+    local line = vim.api.nvim_buf_get_lines(0, row - 1, row, false)[1]
+    if line:match("^%s*$") then
+      return nil
+    end
+
+    local previous = resolve_bullet(parse_line(line), row)
+    if previous and previous.indent == indent then
+      return previous
+    end
+  end
+
+  return nil
+end
+
 local function delete_empty_bullet(lnum, bullet, mode)
   local behavior = config.options.delete_last_bullet_if_empty
   if behavior == 0 then
@@ -380,7 +396,8 @@ local function delete_empty_bullet(lnum, bullet, mode)
     promoted.indent = promoted.indent
       :gsub("\t$", "")
       :gsub(string.rep(" ", vim.o.shiftwidth > 0 and vim.o.shiftwidth or vim.o.tabstop) .. "$", "")
-    local prefix = next_prefix(promoted)
+    local parent = previous_bullet_with_indent(lnum, promoted.indent)
+    local prefix = next_prefix(parent or promoted)
     vim.api.nvim_set_current_line(prefix or "")
     vim.api.nvim_win_set_cursor(0, { lnum, #(prefix or "") })
     return true
