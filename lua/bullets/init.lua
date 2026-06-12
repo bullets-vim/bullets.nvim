@@ -106,6 +106,10 @@ local function add_default_mappings(buf)
   map_buffer(buf, "n", leader .. "gN", "<Plug>(bullets-renumber)", { remap = true })
   map_buffer(buf, "x", leader .. "gN", "<Plug>(bullets-renumber)", { remap = true })
   map_buffer(buf, "n", leader .. "<leader>x", "<Plug>(bullets-toggle-checkbox)", { remap = true })
+  map_buffer(buf, "i", leader .. "<C-t>", "<Plug>(bullets-demote)", { remap = true })
+  map_buffer(buf, "i", leader .. "<C-d>", "<Plug>(bullets-promote)", { remap = true })
+  map_buffer(buf, "n", leader .. ">>", "<Plug>(bullets-demote)", { remap = true })
+  map_buffer(buf, "n", leader .. "<<", "<Plug>(bullets-promote)", { remap = true })
 end
 
 local function should_configure_buffer(buf)
