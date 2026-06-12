@@ -20,6 +20,14 @@ local function at_eol(line)
   return vim.fn.col(".") == #line + 1
 end
 
+local function keys(lhs)
+  return vim.api.nvim_replace_termcodes(lhs, true, false, true)
+end
+
+local function feed_cr()
+  vim.api.nvim_feedkeys(keys("<CR>"), "in", false)
+end
+
 local function open_line_below()
   local lnum = vim.api.nvim_win_get_cursor(0)[1]
   vim.api.nvim_buf_set_lines(0, lnum, lnum, false, { "" })
@@ -39,7 +47,8 @@ function M.insert_new_bullet()
   local bullet = parse_standard(line)
 
   if mode ~= "n" and not at_eol(line) then
-    return "\r"
+    feed_cr()
+    return ""
   end
 
   if not bullet then
@@ -48,12 +57,14 @@ function M.insert_new_bullet()
       return ""
     end
 
-    return "\r"
+    feed_cr()
+    return ""
   end
 
   if bullet.text:match("^%s*$") and config.options.delete_last_bullet_if_empty == 1 then
     if mode ~= "n" then
-      return "\27ddi"
+      vim.api.nvim_feedkeys(keys("<Esc>ddi"), "n", false)
+      return ""
     end
 
     vim.api.nvim_buf_set_lines(0, lnum - 1, lnum, false, {})
@@ -64,7 +75,9 @@ function M.insert_new_bullet()
   local next_bullet = bullet.indent .. bullet.marker .. bullet.spacing
 
   if mode ~= "n" then
-    return "\r\21" .. next_bullet
+    insert_line(lnum, next_bullet)
+    vim.cmd.startinsert({ bang = true })
+    return ""
   end
 
   insert_line(lnum, next_bullet)
