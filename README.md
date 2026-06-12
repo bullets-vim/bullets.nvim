@@ -97,10 +97,8 @@ Each left-hand side is prefixed with `mapping_leader`, which defaults to an empt
 | Normal | `<leader>x` | Toggle the checkbox on the current item. |
 | Insert | `<C-t>`     | Demote the current item.                 |
 | Normal | `>>`        | Demote the current item.                 |
-| Visual | `>`         | Demote the selected range.               |
 | Insert | `<C-d>`     | Promote the current item.                |
 | Normal | `<<`        | Promote the current item.                |
-| Visual | `<`         | Promote the selected range.              |
 
 The plugin also defines these `<Plug>` mappings for custom mappings:
 
