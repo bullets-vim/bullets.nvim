@@ -1014,6 +1014,9 @@ local function partial_marker(markers, checked, total)
   if checked == total then
     return checkbox_checked_marker(markers)
   end
+  if #markers <= 2 then
+    return markers[1]
+  end
 
   local index = math.floor((checked / total) * (#markers - 2)) + 2
   index = math.max(2, math.min(#markers - 1, index))
@@ -1052,25 +1055,30 @@ end
 
 local function set_descendant_checkboxes(lnum, bullet, marker)
   local line_count = vim.api.nvim_buf_line_count(0)
+  local blank_lines = 0
   for row = lnum + 1, line_count do
     local descendant_bullet, line = bullet_at(row)
     if line:match("^%s*$") then
-      break
-    end
-
-    if descendant_bullet then
-      if #descendant_bullet.indent <= #bullet.indent then
+      blank_lines = blank_lines + 1
+      if blank_lines >= config.options.line_spacing then
         break
       end
+    else
+      blank_lines = 0
+      if descendant_bullet then
+        if #descendant_bullet.indent <= #bullet.indent then
+          break
+        end
 
-      local item = checkbox_item(row)
-      if item.checkbox then
-        item.checkbox.marker = marker
-        item.checkbox.index = checkbox_marker_index(marker, item.checkbox.markers)
-        set_checkbox_marker(row, item.bullet, item.checkbox, marker)
+        local item = checkbox_item(row)
+        if item.checkbox then
+          item.checkbox.marker = marker
+          item.checkbox.index = checkbox_marker_index(marker, item.checkbox.markers)
+          set_checkbox_marker(row, item.bullet, item.checkbox, marker)
+        end
+      elseif not wrapped_owner(row, line) then
+        break
       end
-    elseif not wrapped_owner(row, line) then
-      break
     end
   end
 end
@@ -1083,7 +1091,11 @@ function M.toggle_checkbox()
   end
 
   local markers = item.checkbox.markers
-  local marker = checkbox_state(item.checkbox) == "checked" and markers[1] or checkbox_checked_marker(markers)
+  local state = checkbox_state(item.checkbox)
+  local marker = state == "checked" and markers[1] or checkbox_checked_marker(markers)
+  if state == "partial" and config.options.checkbox_partials_toggle == 0 then
+    marker = markers[1]
+  end
   item.checkbox.marker = marker
   item.checkbox.index = checkbox_marker_index(marker, markers)
   set_checkbox_marker(lnum, item.bullet, item.checkbox, marker)
