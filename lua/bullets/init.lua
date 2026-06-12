@@ -65,8 +65,8 @@ end
 
 local function add_plug_mappings()
   map("i", "<Plug>(bullets-newline)", function()
-    return actions().insert_new_bullet()
-  end, { expr = true })
+    actions().insert_new_bullet()
+  end)
   map("n", "<Plug>(bullets-newline)", function()
     actions().insert_new_bullet()
   end)

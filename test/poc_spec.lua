@@ -51,7 +51,7 @@ describe("Bullets.vim", function()
     assert.equals("", vim.fn.maparg(">>", "n"))
   end)
 
-  pending("inserts a new bullet on <CR>", function()
+  it("inserts a new bullet on <CR>", function()
     vim.cmd("enew")
     vim.bo.filetype = "text"
     vim.api.nvim_buf_set_lines(0, 0, -1, false, { "- first item" })

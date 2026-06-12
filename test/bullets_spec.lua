@@ -1,4 +1,5 @@
 local helpers = require("test.helpers")
+local active_it = it
 local it = pending
 
 describe("Bullets.vim", function()
@@ -9,7 +10,7 @@ describe("Bullets.vim", function()
     end)
 
     describe("on return key when cursor is not at EOL", function()
-      it("splits the line and does not add a bullet", function()
+      active_it("splits the line and does not add a bullet", function()
         -- G$i places cursor on last char 't' in "- this is the first bullet"
         -- i inserts before 't', CR is deferred (not at EOL), splits the line
         -- then "second bullet" is typed before 't': "second bullett"
@@ -36,7 +37,7 @@ describe("Bullets.vim", function()
     end)
 
     describe("on return key when cursor is at EOL", function()
-      it("adds a new bullet if the previous line had a known bullet type", function()
+      active_it("adds a new bullet if the previous line had a known bullet type", function()
         helpers.test_bullet_inserted(
           "do that",
           { "# Hello there", "- do this" },
@@ -102,7 +103,7 @@ describe("Bullets.vim", function()
         )
       end)
 
-      it("adds a new - bullet with right padding", function()
+      active_it("adds a new - bullet with right padding", function()
         helpers.test_bullet_inserted(
           "second bullet",
           { "# Hello there", "-   this is the first bullet" },
