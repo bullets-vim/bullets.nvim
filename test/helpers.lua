@@ -29,25 +29,27 @@ function M.test_bullet_inserted(second_bullet, initial_lines, expected_lines)
   assert.are.same(expected_lines, M.get_lines())
 end
 
--- Resets all bullets.vim globals to their plugin defaults.
+-- Resets bullets.nvim to the plugin defaults used by the specs.
 -- Call in before_each for any describe block that mutates config.
 function M.reset_config()
-  vim.g.bullets_enabled_file_types = { "markdown", "text", "gitcommit", "scratch" }
-  vim.g.bullets_enable_in_empty_buffers = 1
-  vim.g.bullets_set_mappings = 1
-  vim.g.bullets_mapping_leader = ""
-  vim.g.bullets_custom_mappings = {}
-  vim.g.bullets_max_alpha_characters = 2
-  vim.g.bullets_auto_indent_after_colon = 1
-  vim.g.bullets_line_spacing = 1
-  vim.g.bullets_renumber_on_change = 1
-  vim.g.bullets_nested_checkboxes = 1
-  vim.g.bullets_checkbox_markers = " .oOX"
-  vim.g.bullets_checkbox_partials_toggle = 1
-  vim.g.bullets_outline_levels = { "ROM", "ABC", "num", "abc", "rom", "std-", "std*", "std+" }
-  vim.g.bullets_enable_roman_list = 1
-  vim.g.bullets_pad_right = 1
-  vim.g.bullets_delete_last_bullet_if_empty = 1
+  require("bullets").setup({
+    enabled_file_types = { "markdown", "text", "gitcommit", "scratch" },
+    enable_in_empty_buffers = true,
+    set_mappings = true,
+    mapping_leader = "",
+    custom_mappings = {},
+    max_alpha_characters = 2,
+    auto_indent_after_colon = true,
+    line_spacing = 1,
+    renumber_on_change = true,
+    nested_checkboxes = true,
+    checkbox_markers = " .oOX",
+    checkbox_partials_toggle = 1,
+    outline_levels = { "ROM", "ABC", "num", "abc", "rom", "std-", "std*", "std+" },
+    enable_roman_list = true,
+    pad_right = true,
+    delete_last_bullet_if_empty = 1,
+  })
 end
 
 return M
