@@ -288,6 +288,9 @@ local function wrapped_owner(lnum, line)
     if previous_bullet and current_indent >= prefix_width(previous_bullet) then
       return previous_bullet
     end
+    if not previous_bullet and #(previous_line:match("^%s*") or "") < current_indent then
+      return nil
+    end
   end
 
   return nil
