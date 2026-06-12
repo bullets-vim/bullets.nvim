@@ -599,6 +599,185 @@ local function wrapped_owner(lnum, line)
   return nil
 end
 
+local function is_ordered(bullet)
+  return bullet.type == "num" or bullet.type == "abc" or bullet.type == "rom"
+end
+
+local function marker_number(bullet)
+  if bullet.type == "num" then
+    return tonumber(bullet.marker)
+  end
+  if bullet.type == "abc" then
+    return ordinal.abc_to_number(bullet.marker)
+  end
+  if bullet.type == "rom" then
+    return ordinal.roman_to_number(bullet.marker)
+  end
+
+  return nil
+end
+
+local function number_marker(type, value, lower)
+  if type == "num" then
+    return tostring(value)
+  end
+  if type == "abc" then
+    return ordinal.number_to_abc(value, lower)
+  end
+  if type == "rom" then
+    return ordinal.number_to_roman(value, lower)
+  end
+
+  return nil
+end
+
+local function bullet_at(lnum)
+  local line = vim.api.nvim_buf_get_lines(0, lnum - 1, lnum, false)[1]
+  if not line then
+    return nil, nil
+  end
+
+  return resolve_bullet(parse_line(line), lnum), line
+end
+
+local function boundary_bullet_at(lnum)
+  local bullet, line = bullet_at(lnum)
+  if bullet then
+    return bullet, line
+  end
+
+  return wrapped_owner(lnum, line or ""), line
+end
+
+local function line_indent(lnum)
+  local line = vim.api.nvim_buf_get_lines(0, lnum - 1, lnum, false)[1] or ""
+  return #(line:match("^%s*") or "")
+end
+
+local function first_bullet_line(lnum, min_indent)
+  min_indent = min_indent or 0
+  if min_indent < 0 then
+    return -1
+  end
+
+  local first = lnum
+  local row = lnum - 1
+  local blank_lines = 0
+  while row >= 1 do
+    local bullet, line = boundary_bullet_at(row)
+    if bullet and #bullet.indent >= min_indent then
+      first = row
+      blank_lines = 0
+    elseif line and line:match("^%s*$") then
+      blank_lines = blank_lines + 1
+      if blank_lines >= config.options.line_spacing then
+        break
+      end
+    elseif blank_lines == 0 then
+      break
+    end
+
+    row = row - 1
+  end
+
+  return first
+end
+
+local function last_bullet_line(lnum, min_indent)
+  min_indent = min_indent or 0
+  if min_indent < 0 then
+    return -1
+  end
+
+  local last = -1
+  local blank_lines = 0
+  local row = lnum
+  local line_count = vim.api.nvim_buf_line_count(0)
+
+  while row <= line_count and line_indent(row) >= min_indent do
+    local bullet, line = boundary_bullet_at(row)
+    if bullet then
+      last = row
+      blank_lines = 0
+    elseif line:match("^%s*$") then
+      blank_lines = blank_lines + 1
+      if blank_lines >= config.options.line_spacing then
+        break
+      end
+    end
+
+    row = row + 1
+  end
+
+  return last
+end
+
+local function ordered_state(bullet)
+  local value = marker_number(bullet)
+  if not value then
+    return nil
+  end
+
+  return {
+    index = 1,
+    type = bullet.type,
+    lower = bullet.marker == bullet.marker:lower(),
+    closure = bullet.closure,
+    spacing = bullet.spacing,
+  }
+end
+
+local function reset_child_states(states, indent)
+  for key, _ in pairs(states) do
+    if key > indent then
+      states[key] = nil
+    end
+  end
+end
+
+local function renumber_lines(first, last)
+  local previous_indent = -1
+  local states = {}
+
+  for lnum = first, last do
+    local bullet = bullet_at(lnum)
+    if bullet then
+      local indent = #bullet.indent
+      if indent < previous_indent then
+        reset_child_states(states, indent)
+      end
+
+      if is_ordered(bullet) then
+        local state = states[indent]
+        if not state or indent > previous_indent then
+          state = ordered_state(bullet)
+          states[indent] = state
+        else
+          state.index = state.index + 1
+        end
+
+        if state then
+          local marker = number_marker(state.type, state.index, state.lower)
+          if marker then
+            local marker_prefix = marker .. state.closure .. state.spacing
+            if state.pad_width and #marker_prefix < state.pad_width then
+              marker_prefix = pad_right(marker_prefix, state.pad_width)
+            elseif state.pad_width and #marker_prefix > state.pad_width then
+              state.pad_width = #marker_prefix
+            elseif not state.pad_width then
+              state.pad_width = #marker_prefix
+            end
+            local prefix = bullet.indent .. marker_prefix
+            vim.api.nvim_buf_set_lines(0, lnum - 1, lnum, false, { prefix .. bullet.text })
+          end
+        end
+      end
+
+      previous_indent = indent
+    end
+  end
+end
+
 function M.insert_new_bullet()
   local mode = vim.fn.mode()
   local lnum = vim.api.nvim_win_get_cursor(0)[1]
@@ -661,9 +840,21 @@ function M.insert_new_bullet()
   return ""
 end
 
-function M.renumber_list() end
+function M.renumber_list()
+  local lnum = vim.api.nvim_win_get_cursor(0)[1]
+  local first = first_bullet_line(lnum)
+  local last = last_bullet_line(lnum)
+  if first > 0 and last > 0 then
+    renumber_lines(first, last)
+  end
+end
 
-function M.renumber_selection() end
+function M.renumber_selection(first, last)
+  first, last = visual_range(first, last)
+  if first and last then
+    renumber_lines(first, last)
+  end
+end
 
 function M.toggle_checkbox() end
 
