@@ -47,6 +47,7 @@ function M.reset_config()
     checkbox_partials_toggle = 1,
     outline_levels = { "ROM", "ABC", "num", "abc", "rom", "std-", "std*", "std+" },
     enable_roman_list = true,
+    enable_wrapped_lines = true,
     pad_right = true,
     delete_last_bullet_if_empty = 1,
   })

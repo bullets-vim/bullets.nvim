@@ -45,7 +45,7 @@ describe("Bullets.vim", function()
         )
       end)
 
-      it("adds a new latex bullet", function()
+      active_it("adds a new latex bullet", function()
         helpers.test_bullet_inserted("Second item", {
           "\\documentclass{article}",
           "  \\begin{document}",
@@ -62,7 +62,7 @@ describe("Bullets.vim", function()
         })
       end)
 
-      it("adds a pandoc bullet if the prev line had one", function()
+      active_it("adds a pandoc bullet if the prev line had one", function()
         helpers.test_bullet_inserted(
           "second bullet",
           { "Hello there", "#. this is the first bullet" },
@@ -70,7 +70,7 @@ describe("Bullets.vim", function()
         )
       end)
 
-      it("adds an Org mode bullet if the prev line had one", function()
+      active_it("adds an Org mode bullet if the prev line had one", function()
         helpers.test_bullet_inserted(
           "second bullet",
           { "Hello there", "**** this is the first bullet" },
