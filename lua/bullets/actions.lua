@@ -389,6 +389,14 @@ local function indent_unit()
   return string.rep(" ", vim.o.shiftwidth > 0 and vim.o.shiftwidth ~= 8 and vim.o.shiftwidth or 2)
 end
 
+local function demote_indent_unit()
+  if not vim.o.expandtab then
+    return "\t"
+  end
+
+  return indent_unit()
+end
+
 local function style_for_bullet(bullet)
   if bullet.type == "std" then
     return "std" .. bullet.marker
@@ -537,9 +545,9 @@ local function change_line_level(lnum, direction)
   local next_indent
 
   if direction == "demote" then
-    next_style = index and config.options.outline_levels[index + 1]
-      or fallback_style_for_indent(bullet.indent .. indent_unit())
-    next_indent = bullet.indent .. indent_unit()
+    local unit = demote_indent_unit()
+    next_style = index and config.options.outline_levels[index + 1] or fallback_style_for_indent(bullet.indent .. unit)
+    next_indent = bullet.indent .. unit
 
     if not next_style then
       local last_style = config.options.outline_levels[#config.options.outline_levels]
