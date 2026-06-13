@@ -3,6 +3,7 @@
 dprint = "latest"
 gitleaks = "latest"
 lefthook = "latest"
+lua-language-server = "3"
 neovim = "latest"
 "npm:@kitlangton/stack" = "0.1.5"
 
@@ -33,6 +34,10 @@ status=0
   done
 exit $status
 """
+
+[tasks."lua:lint"]
+description = "List Lua language server diagnostics"
+run = "lua-language-server --check . --checklevel=Hint --check_format=pretty"
 
 [tasks."release:signing-key"]
 description = "Generate/export the release-please GPG signing key"

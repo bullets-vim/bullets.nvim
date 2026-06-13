@@ -1,6 +1,4 @@
 local helpers = require("test.helpers")
-local active_it = it
-local it = pending
 
 describe("Bullets.vim", function()
   describe("alphabetic bullets", function()
@@ -8,7 +6,7 @@ describe("Bullets.vim", function()
       helpers.reset_config()
     end)
 
-    active_it("adds a new upper case bullet", function()
+    it("adds a new upper case bullet", function()
       helpers.new_buffer({
         "# Hello there",
         "A. this is the first bullet",
@@ -32,7 +30,7 @@ describe("Bullets.vim", function()
       }, helpers.get_lines())
     end)
 
-    active_it("adds a new lower case bullet", function()
+    it("adds a new lower case bullet", function()
       helpers.new_buffer({
         "# Hello there",
         "a. this is the first bullet",
@@ -56,7 +54,7 @@ describe("Bullets.vim", function()
       }, helpers.get_lines())
     end)
 
-    it("adds a new bullet and loops at z", function()
+    pending("adds a new bullet and loops at z", function()
       require("bullets").setup({ renumber_on_change = false })
       helpers.new_buffer({
         "# Hello there",
@@ -81,7 +79,7 @@ describe("Bullets.vim", function()
       }, helpers.get_lines())
     end)
 
-    active_it("does not add a new bullet when mixed case", function()
+    it("does not add a new bullet when mixed case", function()
       -- "Ab." is mixed case so the plugin doesn't recognise it as a bullet.
       -- CR is therefore deferred via feedkeys('n'); the 'tx' flag in our outer
       -- feedkeys drains that deferred CR, leaving normal mode on a new empty line.
@@ -100,7 +98,7 @@ describe("Bullets.vim", function()
     end)
 
     describe("g:bullets_max_alpha_characters", function()
-      active_it("stops adding items after configured max (default 2)", function()
+      it("stops adding items after configured max (default 2)", function()
         require("bullets").setup({ renumber_on_change = false })
         helpers.new_buffer({
           "# Hello there",
@@ -121,7 +119,7 @@ describe("Bullets.vim", function()
         }, helpers.get_lines())
       end)
 
-      active_it("does not bullets if configured as 0", function()
+      it("does not bullets if configured as 0", function()
         require("bullets").setup({ max_alpha_characters = 0 })
         helpers.new_buffer({
           "# Hello there",

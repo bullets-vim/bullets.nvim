@@ -1,8 +1,7 @@
 local helpers = require("test.helpers")
-local it = pending
 
 describe("filetypes", function()
-  it("creates mapping for bullets on empty buffer if configured", function()
+  pending("creates mapping for bullets on empty buffer if configured", function()
     -- g:bullets_enable_in_empty_buffers defaults to 0, so a new buffer with
     -- no filetype does NOT get the bullet <CR> mapping.
     vim.cmd("enew")
@@ -11,7 +10,7 @@ describe("filetypes", function()
     assert.are.same({ "# Hello there", "- this is the first bullet", "this is the second bullet" }, helpers.get_lines())
   end)
 
-  it("should have text filetype for .txt", function()
+  pending("should have text filetype for .txt", function()
     local tmpfile = vim.fn.tempname() .. ".txt"
     vim.cmd("edit " .. tmpfile)
     local ft = vim.bo.filetype

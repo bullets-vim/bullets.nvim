@@ -1,6 +1,4 @@
 local helpers = require("test.helpers")
-local active_it = it
-local it = pending
 
 describe("Bullets.vim", function()
   describe("inserting new bullets", function()
@@ -10,7 +8,7 @@ describe("Bullets.vim", function()
     end)
 
     describe("on return key when cursor is not at EOL", function()
-      active_it("splits the line and does not add a bullet", function()
+      it("splits the line and does not add a bullet", function()
         -- G$i places cursor on last char 't' in "- this is the first bullet"
         -- i inserts before 't', CR is deferred (not at EOL), splits the line
         -- then "second bullet" is typed before 't': "second bullett"
@@ -37,7 +35,7 @@ describe("Bullets.vim", function()
     end)
 
     describe("on return key when cursor is at EOL", function()
-      active_it("adds a new bullet if the previous line had a known bullet type", function()
+      it("adds a new bullet if the previous line had a known bullet type", function()
         helpers.test_bullet_inserted(
           "do that",
           { "# Hello there", "- do this" },
@@ -45,7 +43,7 @@ describe("Bullets.vim", function()
         )
       end)
 
-      active_it("adds a new latex bullet", function()
+      it("adds a new latex bullet", function()
         helpers.test_bullet_inserted("Second item", {
           "\\documentclass{article}",
           "  \\begin{document}",
@@ -62,7 +60,7 @@ describe("Bullets.vim", function()
         })
       end)
 
-      active_it("adds a pandoc bullet if the prev line had one", function()
+      it("adds a pandoc bullet if the prev line had one", function()
         helpers.test_bullet_inserted(
           "second bullet",
           { "Hello there", "#. this is the first bullet" },
@@ -70,7 +68,7 @@ describe("Bullets.vim", function()
         )
       end)
 
-      active_it("adds an Org mode bullet if the prev line had one", function()
+      it("adds an Org mode bullet if the prev line had one", function()
         helpers.test_bullet_inserted(
           "second bullet",
           { "Hello there", "**** this is the first bullet" },
@@ -78,7 +76,7 @@ describe("Bullets.vim", function()
         )
       end)
 
-      active_it("adds a new numeric bullet if the previous line had numeric bullet", function()
+      it("adds a new numeric bullet if the previous line had numeric bullet", function()
         helpers.test_bullet_inserted(
           "second bullet",
           { "# Hello there", "1) this is the first bullet" },
@@ -86,7 +84,7 @@ describe("Bullets.vim", function()
         )
       end)
 
-      active_it("adds a new numeric bullet with right padding", function()
+      it("adds a new numeric bullet with right padding", function()
         helpers.test_bullet_inserted(
           "second bullet",
           { "# Hello there", "1.  this is the first bullet" },
@@ -94,7 +92,7 @@ describe("Bullets.vim", function()
         )
       end)
 
-      active_it("maintains total bullet width from 9. to 10. with reduced padding", function()
+      it("maintains total bullet width from 9. to 10. with reduced padding", function()
         require("bullets").setup({ renumber_on_change = false })
         helpers.test_bullet_inserted(
           "second bullet",
@@ -103,7 +101,7 @@ describe("Bullets.vim", function()
         )
       end)
 
-      active_it("adds a new - bullet with right padding", function()
+      it("adds a new - bullet with right padding", function()
         helpers.test_bullet_inserted(
           "second bullet",
           { "# Hello there", "-   this is the first bullet" },
@@ -111,7 +109,7 @@ describe("Bullets.vim", function()
         )
       end)
 
-      active_it("does not insert a new numeric bullet for decimal numbers", function()
+      it("does not insert a new numeric bullet for decimal numbers", function()
         -- "3.14159 is an approximation of pi." is not a bullet line
         -- CR on non-bullet line is deferred, use two-call pattern
         helpers.new_buffer({
@@ -127,7 +125,7 @@ describe("Bullets.vim", function()
         }, helpers.get_lines())
       end)
 
-      active_it("adds a new roman numeral bullet", function()
+      it("adds a new roman numeral bullet", function()
         require("bullets").setup({ pad_right = false })
         helpers.new_buffer({
           "# Hello there",
@@ -144,7 +142,7 @@ describe("Bullets.vim", function()
         }, helpers.get_lines())
       end)
 
-      active_it("adds a new lowercase roman numeral bullet", function()
+      it("adds a new lowercase roman numeral bullet", function()
         require("bullets").setup({ pad_right = false })
         helpers.new_buffer({
           "# Hello there",
@@ -161,7 +159,7 @@ describe("Bullets.vim", function()
         }, helpers.get_lines())
       end)
 
-      active_it("does not confuse with the 'ignorecase' option", function()
+      it("does not confuse with the 'ignorecase' option", function()
         vim.cmd("set ignorecase")
         -- "Vi." is mixed case / not a valid roman numeral bullet → non-bullet CR
         helpers.new_buffer({
@@ -177,7 +175,7 @@ describe("Bullets.vim", function()
         }, helpers.get_lines())
       end)
 
-      active_it("does not insert a new roman bullets without following spaces", function()
+      it("does not insert a new roman bullets without following spaces", function()
         -- "m.example.com is a site." has no space after the dot → not a bullet
         helpers.new_buffer({
           "# Hello there",
@@ -192,7 +190,7 @@ describe("Bullets.vim", function()
         }, helpers.get_lines())
       end)
 
-      active_it("does not insert a new roman bullets for invalid roman numbers", function()
+      it("does not insert a new roman bullets for invalid roman numbers", function()
         -- "LID." is not a valid roman numeral, so no bullet continuation
         -- However lines typed after non-bullet lines also get no bullet
         helpers.new_buffer({
@@ -217,7 +215,7 @@ describe("Bullets.vim", function()
         }, helpers.get_lines())
       end)
 
-      active_it("deletes the last bullet if it is empty", function()
+      it("deletes the last bullet if it is empty", function()
         require("bullets").setup({ delete_last_bullet_if_empty = 1 })
         helpers.new_buffer({
           "# Hello there",
@@ -236,7 +234,7 @@ describe("Bullets.vim", function()
         }, lines)
       end)
 
-      active_it("promotes the last bullet when configured to", function()
+      it("promotes the last bullet when configured to", function()
         require("bullets").setup({ delete_last_bullet_if_empty = 2 })
         helpers.new_buffer({
           "# Hello there",
@@ -259,7 +257,7 @@ describe("Bullets.vim", function()
         }, lines)
       end)
 
-      active_it("does not delete the last bullet when configured not to", function()
+      it("does not delete the last bullet when configured not to", function()
         require("bullets").setup({ delete_last_bullet_if_empty = 0 })
         helpers.new_buffer({
           "# Hello there",
@@ -281,7 +279,7 @@ describe("Bullets.vim", function()
         }, lines)
       end)
 
-      active_it("adds configured blank spacing before the next bullet", function()
+      it("adds configured blank spacing before the next bullet", function()
         require("bullets").setup({ line_spacing = 2 })
         helpers.test_bullet_inserted("second bullet", {
           "# Hello there",
@@ -294,7 +292,7 @@ describe("Bullets.vim", function()
         })
       end)
 
-      active_it("can disable right padding for ordered bullets", function()
+      it("can disable right padding for ordered bullets", function()
         require("bullets").setup({ pad_right = false })
         helpers.test_bullet_inserted("second bullet", {
           "# Hello there",
@@ -306,7 +304,7 @@ describe("Bullets.vim", function()
         })
       end)
 
-      active_it("indents after a line ending in a colon", function()
+      it("indents after a line ending in a colon", function()
         require("bullets").setup({ auto_indent_after_colon = true })
         helpers.new_buffer({
           "# Hello there",
@@ -322,7 +320,7 @@ describe("Bullets.vim", function()
         }, helpers.get_lines())
       end)
 
-      active_it("indents after a line ending in a fullwidth colon", function()
+      it("indents after a line ending in a fullwidth colon", function()
         require("bullets").setup({ auto_indent_after_colon = true })
         helpers.new_buffer({
           "# Hello there",
@@ -337,7 +335,7 @@ describe("Bullets.vim", function()
         }, helpers.get_lines())
       end)
 
-      active_it("can disable colon auto indentation", function()
+      it("can disable colon auto indentation", function()
         require("bullets").setup({ auto_indent_after_colon = false })
         helpers.test_bullet_inserted("second bullet:", {
           "# Hello there",
@@ -356,7 +354,7 @@ describe("Bullets.vim", function()
         }, helpers.get_lines())
       end)
 
-      active_it("toggles roman numeral bullets with enable_roman_list", function()
+      it("toggles roman numeral bullets with enable_roman_list", function()
         -- Disable alpha lists to isolate test to roman numerals
         require("bullets").setup({ max_alpha_characters = 0, enable_roman_list = true })
         helpers.new_buffer({
