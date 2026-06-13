@@ -1,5 +1,5 @@
-local config = require("bullets.config")
-local ordinal = require("bullets.ordinal")
+local config = require 'bullets.config'
+local ordinal = require 'bullets.ordinal'
 
 local M = {}
 
@@ -9,7 +9,7 @@ local function style_enabled(marker)
       return true
     end
 
-    if style:sub(-1) == "+" and marker:match("^" .. vim.pesc(style:sub(1, -2)) .. "+$") then
+    if style:sub(-1) == '+' and marker:match('^' .. vim.pesc(style:sub(1, -2)) .. '+$') then
       return true
     end
   end
@@ -18,13 +18,13 @@ local function style_enabled(marker)
 end
 
 local function parse_static(line)
-  local indent, marker, spacing, text = line:match("^(%s*)(\\item)(%s+)(.*)$")
+  local indent, marker, spacing, text = line:match '^(%s*)(\\item)(%s+)(.*)$'
   if not marker then
-    indent, marker, spacing, text = line:match("^(%s*)(#%.)(%s+)(.*)$")
+    indent, marker, spacing, text = line:match '^(%s*)(#%.)(%s+)(.*)$'
   end
   if not marker then
-    indent, marker, spacing, text = line:match("^(%s*)([%*.]+)(%s+)(.*)$")
-    if marker and (marker == "*" or not (marker:match("^%*+$") or marker:match("^%.+$"))) then
+    indent, marker, spacing, text = line:match '^(%s*)([%*.]+)(%s+)(.*)$'
+    if marker and (marker == '*' or not (marker:match '^%*+$' or marker:match '^%.+$')) then
       marker = nil
     end
   end
@@ -33,7 +33,7 @@ local function parse_static(line)
   end
 
   return {
-    type = "static",
+    type = 'static',
     indent = indent,
     marker = marker,
     spacing = spacing,
@@ -42,7 +42,7 @@ local function parse_static(line)
 end
 
 local function parse_standard(line)
-  local indent, marker, spacing, text = line:match("^(%s*)([-*+])(%s+)(.*)$")
+  local indent, marker, spacing, text = line:match '^(%s*)([-*+])(%s+)(.*)$'
   if not marker then
     return nil
   end
@@ -59,13 +59,13 @@ local function parse_standard(line)
 end
 
 local function parse_numeric(line)
-  local indent, marker, closure, spacing, text = line:match("^(%s*)(%d+)([.)])(%s+)(.*)$")
+  local indent, marker, closure, spacing, text = line:match '^(%s*)(%d+)([.)])(%s+)(.*)$'
   if not marker then
     return nil
   end
 
   return {
-    type = "num",
+    type = 'num',
     indent = indent,
     marker = marker,
     closure = closure,
@@ -80,13 +80,13 @@ local function parse_alpha(line)
     return nil
   end
 
-  local indent, marker, closure, spacing, text = line:match("^(%s*)(%a+)([.)])(%s+)(.*)$")
+  local indent, marker, closure, spacing, text = line:match '^(%s*)(%a+)([.)])(%s+)(.*)$'
   if not marker or #marker > max or not (marker == marker:lower() or marker == marker:upper()) then
     return nil
   end
 
   return {
-    type = "abc",
+    type = 'abc',
     indent = indent,
     marker = marker,
     closure = closure,
@@ -100,13 +100,13 @@ local function parse_roman(line)
     return nil
   end
 
-  local indent, marker, closure, spacing, text = line:match("^(%s*)(%a+)([.)])(%s+)(.*)$")
+  local indent, marker, closure, spacing, text = line:match '^(%s*)(%a+)([.)])(%s+)(.*)$'
   if not marker or not (marker == marker:lower() or marker == marker:upper()) or not ordinal.is_roman(marker) then
     return nil
   end
 
   return {
-    type = "rom",
+    type = 'rom',
     indent = indent,
     marker = marker,
     closure = closure,
@@ -123,7 +123,7 @@ local function parse_line(line)
 
   local standard = parse_standard(line)
   if standard then
-    standard.type = "std"
+    standard.type = 'std'
     return { standard }
   end
 
@@ -145,12 +145,12 @@ local resolve_bullet
 local function previous_ordered_type(lnum, indent)
   for row = lnum - 1, 1, -1 do
     local line = vim.api.nvim_buf_get_lines(0, row - 1, row, false)[1]
-    if line == "" then
+    if line == '' then
       return nil
     end
 
     local bullet = resolve_bullet(parse_line(line), row)
-    if bullet and bullet.indent == indent and (bullet.type == "abc" or bullet.type == "rom") then
+    if bullet and bullet.indent == indent and (bullet.type == 'abc' or bullet.type == 'rom') then
       return bullet.type
     end
   end
@@ -176,7 +176,7 @@ function resolve_bullet(bullets, lnum)
   end
 
   for _, bullet in ipairs(bullets) do
-    if bullet.type == "rom" then
+    if bullet.type == 'rom' then
       return bullet
     end
   end
@@ -185,7 +185,7 @@ function resolve_bullet(bullets, lnum)
 end
 
 local function at_eol(line)
-  return vim.fn.col(".") == #line + 1
+  return vim.fn.col '.' == #line + 1
 end
 
 local function keys(lhs)
@@ -193,12 +193,12 @@ local function keys(lhs)
 end
 
 local function feed_cr()
-  vim.api.nvim_feedkeys(keys("<CR>"), "in", false)
+  vim.api.nvim_feedkeys(keys '<CR>', 'in', false)
 end
 
 local function open_line_below()
   local lnum = vim.api.nvim_win_get_cursor(0)[1]
-  vim.api.nvim_buf_set_lines(0, lnum, lnum, false, { "" })
+  vim.api.nvim_buf_set_lines(0, lnum, lnum, false, { '' })
   vim.api.nvim_win_set_cursor(0, { lnum + 1, 0 })
   vim.cmd.startinsert()
 end
@@ -226,14 +226,14 @@ local function pad_right(prefix, width)
     return prefix
   end
 
-  return prefix .. string.rep(" ", width - #prefix)
+  return prefix .. string.rep(' ', width - #prefix)
 end
 
 local function next_marker(bullet)
-  if bullet.type == "num" then
+  if bullet.type == 'num' then
     return tostring(tonumber(bullet.marker) + 1)
   end
-  if bullet.type == "abc" then
+  if bullet.type == 'abc' then
     local marker =
       ordinal.number_to_abc(ordinal.abc_to_number(bullet.marker) + 1, bullet.marker == bullet.marker:lower())
     if #marker > config.options.max_alpha_characters then
@@ -241,7 +241,7 @@ local function next_marker(bullet)
     end
     return marker
   end
-  if bullet.type == "rom" then
+  if bullet.type == 'rom' then
     return ordinal.number_to_roman(ordinal.roman_to_number(bullet.marker) + 1, bullet.marker == bullet.marker:lower())
   end
 
@@ -249,7 +249,7 @@ local function next_marker(bullet)
 end
 
 local function prefix_width(bullet)
-  if bullet.type == "num" or bullet.type == "abc" or bullet.type == "rom" then
+  if bullet.type == 'num' or bullet.type == 'abc' or bullet.type == 'rom' then
     return #bullet.indent + #bullet.marker + #bullet.closure + #bullet.spacing
   end
 
@@ -264,29 +264,29 @@ local function next_prefix(bullet)
     return nil
   end
 
-  if bullet.type == "std" then
+  if bullet.type == 'std' then
     return bullet.indent .. marker .. bullet.spacing
   end
-  if bullet.type == "static" then
+  if bullet.type == 'static' then
     return bullet.indent .. marker .. bullet.spacing
   end
 
-  local prefix = marker .. bullet.closure .. " "
+  local prefix = marker .. bullet.closure .. ' '
   return bullet.indent .. pad_right(prefix, #bullet.marker + #bullet.closure + #bullet.spacing)
 end
 
 function current_prefix(bullet)
-  if bullet.type == "std" or bullet.type == "static" then
+  if bullet.type == 'std' or bullet.type == 'static' then
     return bullet.indent .. bullet.marker .. bullet.spacing
   end
 
-  local prefix = bullet.marker .. bullet.closure .. " "
+  local prefix = bullet.marker .. bullet.closure .. ' '
   return bullet.indent .. pad_right(prefix, #bullet.marker + #bullet.closure + #bullet.spacing)
 end
 
 local function checkbox_markers()
   local markers = {}
-  local configured = config.options.checkbox_markers or ""
+  local configured = config.options.checkbox_markers or ''
 
   for index = 0, vim.fn.strchars(configured) - 1 do
     table.insert(markers, vim.fn.strcharpart(configured, index, 1))
@@ -302,12 +302,12 @@ local function checkbox_marker_index(marker, markers)
     end
   end
 
-  if marker == " " then
+  if marker == ' ' then
     return 1
   end
 
   local checked = markers[#markers]
-  if checked and (marker:lower() == checked:lower() or marker:lower() == "x") then
+  if checked and (marker:lower() == checked:lower() or marker:lower() == 'x') then
     return #markers
   end
 
@@ -315,7 +315,7 @@ local function checkbox_marker_index(marker, markers)
 end
 
 local function parse_checkbox_text(text)
-  local marker, spacing, rest = text:match("^%[([^%]]+)%](%s*)(.*)$")
+  local marker, spacing, rest = text:match '^%[([^%]]+)%](%s*)(.*)$'
   if not marker then
     return nil
   end
@@ -345,17 +345,17 @@ end
 
 local function checkbox_state(checkbox)
   if checkbox.index == 1 then
-    return "unchecked"
+    return 'unchecked'
   end
   if checkbox.index == #checkbox.markers then
-    return "checked"
+    return 'checked'
   end
 
-  return "partial"
+  return 'partial'
 end
 
 local function checkbox_text(marker, checkbox)
-  return "[" .. marker .. "]" .. checkbox.spacing .. checkbox.rest
+  return '[' .. marker .. ']' .. checkbox.spacing .. checkbox.rest
 end
 
 local function set_checkbox_marker(lnum, bullet, checkbox, marker)
@@ -364,79 +364,83 @@ end
 
 local function checkbox_continuation_prefix(bullet, prefix)
   local checkbox = parse_checkbox_text(bullet.text)
-  local unchecked = checkbox and checkbox_unchecked_marker()
+  if not checkbox then
+    return prefix
+  end
+
+  local unchecked = checkbox_unchecked_marker()
   if not unchecked then
     return prefix
   end
 
-  return prefix .. "[" .. unchecked .. "]" .. checkbox.spacing
+  return prefix .. '[' .. unchecked .. ']' .. checkbox.spacing
 end
 
 local function is_empty_bullet_text(text)
-  if text == "" then
+  if text == '' then
     return true
   end
 
   local checkbox = parse_checkbox_text(text)
-  return checkbox and checkbox.rest == ""
+  return checkbox and checkbox.rest == ''
 end
 
 local function indent_unit()
   if not vim.o.expandtab and vim.o.shiftwidth ~= 8 then
-    return "\t"
+    return '\t'
   end
 
-  return string.rep(" ", vim.o.shiftwidth > 0 and vim.o.shiftwidth ~= 8 and vim.o.shiftwidth or 2)
+  return string.rep(' ', vim.o.shiftwidth > 0 and vim.o.shiftwidth ~= 8 and vim.o.shiftwidth or 2)
 end
 
 local function demote_indent_unit()
   if not vim.o.expandtab then
-    return "\t"
+    return '\t'
   end
 
   return indent_unit()
 end
 
 local function style_for_bullet(bullet)
-  if bullet.type == "std" then
-    return "std" .. bullet.marker
+  if bullet.type == 'std' then
+    return 'std' .. bullet.marker
   end
-  if bullet.type == "static" then
+  if bullet.type == 'static' then
     return bullet.marker
   end
-  if bullet.type == "num" then
-    return "num"
+  if bullet.type == 'num' then
+    return 'num'
   end
-  if bullet.type == "abc" then
-    return bullet.marker == bullet.marker:lower() and "abc" or "ABC"
+  if bullet.type == 'abc' then
+    return bullet.marker == bullet.marker:lower() and 'abc' or 'ABC'
   end
-  if bullet.type == "rom" then
-    return bullet.marker == bullet.marker:lower() and "rom" or "ROM"
+  if bullet.type == 'rom' then
+    return bullet.marker == bullet.marker:lower() and 'rom' or 'ROM'
   end
 
   return nil
 end
 
 local function bullet_for_style(style, indent)
-  if style == "num" then
-    return { type = "num", indent = indent, marker = "1", closure = ".", spacing = " ", text = "" }
+  if style == 'num' then
+    return { type = 'num', indent = indent, marker = '1', closure = '.', spacing = ' ', text = '' }
   end
-  if style == "abc" then
-    return { type = "abc", indent = indent, marker = "a", closure = ".", spacing = " ", text = "" }
+  if style == 'abc' then
+    return { type = 'abc', indent = indent, marker = 'a', closure = '.', spacing = ' ', text = '' }
   end
-  if style == "ABC" then
-    return { type = "abc", indent = indent, marker = "A", closure = ".", spacing = " ", text = "" }
+  if style == 'ABC' then
+    return { type = 'abc', indent = indent, marker = 'A', closure = '.', spacing = ' ', text = '' }
   end
-  if style == "rom" then
-    return { type = "rom", indent = indent, marker = "i", closure = ".", spacing = " ", text = "" }
+  if style == 'rom' then
+    return { type = 'rom', indent = indent, marker = 'i', closure = '.', spacing = ' ', text = '' }
   end
-  if style == "ROM" then
-    return { type = "rom", indent = indent, marker = "I", closure = ".", spacing = " ", text = "" }
+  if style == 'ROM' then
+    return { type = 'rom', indent = indent, marker = 'I', closure = '.', spacing = ' ', text = '' }
   end
 
-  local marker = style:match("^std(.+)$")
+  local marker = style:match '^std(.+)$'
   if marker then
-    return { type = "std", indent = indent, marker = marker, spacing = " ", text = "" }
+    return { type = 'std', indent = indent, marker = marker, spacing = ' ', text = '' }
   end
 
   return nil
@@ -487,8 +491,8 @@ local function parent_indent(indent)
   end
 
   return indent
-    :gsub("\t$", "")
-    :gsub(string.rep(" ", vim.o.shiftwidth > 0 and vim.o.shiftwidth or vim.o.tabstop) .. "$", "")
+    :gsub('\t$', '')
+    :gsub(string.rep(' ', vim.o.shiftwidth > 0 and vim.o.shiftwidth or vim.o.tabstop) .. '$', '')
 end
 
 local function first_bullet_for_style(style, indent)
@@ -498,7 +502,7 @@ end
 local function previous_bullet_with_style(lnum, style, indent)
   for row = lnum - 1, 1, -1 do
     local line = vim.api.nvim_buf_get_lines(0, row - 1, row, false)[1]
-    if line == "" then
+    if line == '' then
       return nil
     end
 
@@ -544,21 +548,21 @@ local function change_line_level(lnum, direction)
   local next_style
   local next_indent
 
-  if direction == "demote" then
+  if direction == 'demote' then
     local unit = demote_indent_unit()
     next_style = index and config.options.outline_levels[index + 1] or fallback_style_for_indent(bullet.indent .. unit)
     next_indent = bullet.indent .. unit
 
     if not next_style then
       local last_style = config.options.outline_levels[#config.options.outline_levels]
-      if last_style and last_style:match("^std") and bullet.type == "std" then
+      if last_style and last_style:match '^std' and bullet.type == 'std' then
         next_style = style
       else
         return false
       end
     end
   else
-    if bullet.indent == "" then
+    if bullet.indent == '' then
       vim.api.nvim_buf_set_lines(0, lnum - 1, lnum, false, { bullet.text })
       vim.api.nvim_win_set_cursor(0, { lnum, 0 })
       return true
@@ -587,7 +591,7 @@ local function change_line_level(lnum, direction)
   local prefix = current_prefix(next_bullet)
   vim.api.nvim_buf_set_lines(0, lnum - 1, lnum, false, { prefix .. bullet.text })
   if checkbox then
-    prefix = prefix .. "[" .. checkbox.marker .. "]" .. checkbox.spacing
+    prefix = prefix .. '[' .. checkbox.marker .. ']' .. checkbox.spacing
   end
   vim.api.nvim_win_set_cursor(0, { lnum, #prefix })
   return true
@@ -607,8 +611,8 @@ local function visual_range(first, last)
     return first, last
   end
 
-  local start_pos = vim.fn.getpos("'<")
-  local end_pos = vim.fn.getpos("'>")
+  local start_pos = vim.fn.getpos "'<"
+  local end_pos = vim.fn.getpos "'>"
   return math.min(start_pos[2], end_pos[2]), math.max(start_pos[2], end_pos[2])
 end
 
@@ -625,38 +629,22 @@ local function change_visual_level(direction, first, last)
 end
 
 local function ends_with_colon(text)
-  return text:sub(-1) == ":" or text:sub(-3) == "："
+  return text:sub(-1) == ':' or text:sub(-3) == '：'
 end
 
 local function spaced_lines(prefix)
   local lines = {}
   for _ = 2, config.options.line_spacing do
-    table.insert(lines, "")
+    table.insert(lines, '')
   end
   table.insert(lines, prefix)
   return lines, #lines
 end
 
-local function previous_bullet_with_indent(lnum, indent)
-  for row = lnum - 1, 1, -1 do
-    local line = vim.api.nvim_buf_get_lines(0, row - 1, row, false)[1]
-    if line:match("^%s*$") then
-      return nil
-    end
-
-    local previous = resolve_bullet(parse_line(line), row)
-    if previous and previous.indent == indent then
-      return previous
-    end
-  end
-
-  return nil
-end
-
 local function previous_parent_bullet(lnum, indent)
   for row = lnum - 1, 1, -1 do
     local line = vim.api.nvim_buf_get_lines(0, row - 1, row, false)[1]
-    if line:match("^%s*$") then
+    if line:match '^%s*$' then
       return nil
     end
 
@@ -672,7 +660,7 @@ end
 local function delete_empty_bullet(lnum, bullet, mode)
   local behavior = config.options.delete_last_bullet_if_empty
   if behavior == 0 then
-    if mode == "n" then
+    if mode == 'n' then
       open_line_below()
     else
       split_line()
@@ -680,14 +668,14 @@ local function delete_empty_bullet(lnum, bullet, mode)
     return true
   end
 
-  if behavior == 2 and bullet.indent ~= "" then
+  if behavior == 2 and bullet.indent ~= '' then
     local parent = previous_parent_bullet(lnum, bullet.indent)
-    local prefix = parent and next_prefix(parent) or ""
+    local prefix = parent and next_prefix(parent) or ''
     if prefix then
       prefix = checkbox_continuation_prefix(bullet, prefix)
     end
-    vim.api.nvim_set_current_line(prefix or "")
-    vim.api.nvim_win_set_cursor(0, { lnum, #(prefix or "") })
+    vim.api.nvim_set_current_line(prefix or '')
+    vim.api.nvim_win_set_cursor(0, { lnum, #(prefix or '') })
     return true
   end
 
@@ -697,14 +685,14 @@ local function delete_empty_bullet(lnum, bullet, mode)
 end
 
 local function wrapped_owner(lnum, line)
-  if not config.options.enable_wrapped_lines or line:match("^%s*$") then
+  if not config.options.enable_wrapped_lines or line:match '^%s*$' then
     return nil
   end
 
-  local current_indent = #(line:match("^%s*") or "")
+  local current_indent = #(line:match '^%s*' or '')
   for row = lnum - 1, 1, -1 do
     local previous_line = vim.api.nvim_buf_get_lines(0, row - 1, row, false)[1]
-    if previous_line:match("^%s*$") then
+    if previous_line:match '^%s*$' then
       return nil
     end
 
@@ -712,7 +700,7 @@ local function wrapped_owner(lnum, line)
     if previous_bullet and current_indent >= prefix_width(previous_bullet) then
       return previous_bullet
     end
-    if not previous_bullet and #(previous_line:match("^%s*") or "") < current_indent then
+    if not previous_bullet and #(previous_line:match '^%s*' or '') < current_indent then
       return nil
     end
   end
@@ -721,17 +709,17 @@ local function wrapped_owner(lnum, line)
 end
 
 local function is_ordered(bullet)
-  return bullet.type == "num" or bullet.type == "abc" or bullet.type == "rom"
+  return bullet.type == 'num' or bullet.type == 'abc' or bullet.type == 'rom'
 end
 
 local function marker_number(bullet)
-  if bullet.type == "num" then
+  if bullet.type == 'num' then
     return tonumber(bullet.marker)
   end
-  if bullet.type == "abc" then
+  if bullet.type == 'abc' then
     return ordinal.abc_to_number(bullet.marker)
   end
-  if bullet.type == "rom" then
+  if bullet.type == 'rom' then
     return ordinal.roman_to_number(bullet.marker)
   end
 
@@ -739,13 +727,13 @@ local function marker_number(bullet)
 end
 
 local function number_marker(type, value, lower)
-  if type == "num" then
+  if type == 'num' then
     return tostring(value)
   end
-  if type == "abc" then
+  if type == 'abc' then
     return ordinal.number_to_abc(value, lower)
   end
-  if type == "rom" then
+  if type == 'rom' then
     return ordinal.number_to_roman(value, lower)
   end
 
@@ -767,12 +755,12 @@ local function boundary_bullet_at(lnum)
     return bullet, line
   end
 
-  return wrapped_owner(lnum, line or ""), line
+  return wrapped_owner(lnum, line or ''), line
 end
 
 local function line_indent(lnum)
-  local line = vim.api.nvim_buf_get_lines(0, lnum - 1, lnum, false)[1] or ""
-  return #(line:match("^%s*") or "")
+  local line = vim.api.nvim_buf_get_lines(0, lnum - 1, lnum, false)[1] or ''
+  return #(line:match '^%s*' or '')
 end
 
 local function first_bullet_line(lnum, min_indent)
@@ -789,7 +777,7 @@ local function first_bullet_line(lnum, min_indent)
     if bullet and #bullet.indent >= min_indent then
       first = row
       blank_lines = 0
-    elseif line and line:match("^%s*$") then
+    elseif line and line:match '^%s*$' then
       blank_lines = blank_lines + 1
       if blank_lines >= config.options.line_spacing then
         break
@@ -820,7 +808,7 @@ local function last_bullet_line(lnum, min_indent)
     if bullet then
       last = row
       blank_lines = 0
-    elseif line:match("^%s*$") then
+    elseif line and line:match '^%s*$' then
       blank_lines = blank_lines + 1
       if blank_lines >= config.options.line_spacing then
         break
@@ -905,34 +893,34 @@ function M.insert_new_bullet()
   local line = vim.api.nvim_get_current_line()
   local bullet = resolve_bullet(parse_line(line), lnum) or wrapped_owner(lnum, line)
 
-  if mode ~= "n" and not at_eol(line) then
+  if mode ~= 'n' and not at_eol(line) then
     feed_cr()
-    return ""
+    return ''
   end
 
   if not bullet then
-    if mode == "n" then
+    if mode == 'n' then
       open_line_below()
-      return ""
+      return ''
     end
 
     feed_cr()
-    return ""
+    return ''
   end
 
-  if bullet.text:match("^%s*$") and config.options.delete_last_bullet_if_empty == 1 then
-    if mode ~= "n" then
-      vim.api.nvim_feedkeys(keys("<Esc>ddi"), "n", false)
-      return ""
+  if bullet.text:match '^%s*$' and config.options.delete_last_bullet_if_empty == 1 then
+    if mode ~= 'n' then
+      vim.api.nvim_feedkeys(keys '<Esc>ddi', 'n', false)
+      return ''
     end
 
     vim.api.nvim_buf_set_lines(0, lnum - 1, lnum, false, {})
     vim.cmd.startinsert()
-    return ""
+    return ''
   end
 
   if is_empty_bullet_text(bullet.text) and delete_empty_bullet(lnum, bullet, mode) then
-    return ""
+    return ''
   end
 
   local prefix
@@ -945,22 +933,22 @@ function M.insert_new_bullet()
 
   prefix = prefix or next_prefix(bullet)
   if not prefix then
-    if mode == "n" then
+    if mode == 'n' then
       open_line_below()
-      return ""
+      return ''
     end
 
     feed_cr()
-    return ""
+    return ''
   end
 
   prefix = checkbox_continuation_prefix(bullet, prefix)
 
   local lines, cursor_index = spaced_lines(prefix)
   insert_lines(lnum, lines, cursor_index)
-  vim.cmd.startinsert({ bang = true })
+  vim.cmd.startinsert { bang = true }
 
-  return ""
+  return ''
 end
 
 function M.renumber_list()
@@ -1037,7 +1025,7 @@ local function recompute_items(items)
     if #item.children > 0 then
       local checked = 0
       for _, child in ipairs(item.children) do
-        if checkbox_state(child.checkbox) == "checked" then
+        if checkbox_state(child.checkbox) == 'checked' then
           checked = checked + 1
         end
       end
@@ -1046,7 +1034,7 @@ local function recompute_items(items)
       item.checkbox.marker = marker
       item.checkbox.index = checkbox_marker_index(marker, item.checkbox.markers)
       set_checkbox_marker(item.lnum, item.bullet, item.checkbox, marker)
-    elseif checkbox_state(item.checkbox) == "partial" then
+    elseif checkbox_state(item.checkbox) == 'partial' then
       local marker = item.checkbox.markers[1]
       item.checkbox.marker = marker
       item.checkbox.index = 1
@@ -1066,7 +1054,11 @@ local function set_descendant_checkboxes(lnum, bullet, marker)
   local blank_lines = 0
   for row = lnum + 1, line_count do
     local descendant_bullet, line = bullet_at(row)
-    if line:match("^%s*$") then
+    if not line then
+      break
+    end
+
+    if line:match '^%s*$' then
       blank_lines = blank_lines + 1
       if blank_lines >= config.options.line_spacing then
         break
@@ -1079,7 +1071,7 @@ local function set_descendant_checkboxes(lnum, bullet, marker)
         end
 
         local item = checkbox_item(row)
-        if item.checkbox then
+        if item and item.checkbox then
           item.checkbox.marker = marker
           item.checkbox.index = checkbox_marker_index(marker, item.checkbox.markers)
           set_checkbox_marker(row, item.bullet, item.checkbox, marker)
@@ -1100,8 +1092,8 @@ function M.toggle_checkbox()
 
   local markers = item.checkbox.markers
   local state = checkbox_state(item.checkbox)
-  local marker = state == "checked" and markers[1] or checkbox_checked_marker(markers)
-  if state == "partial" and config.options.checkbox_partials_toggle == 0 then
+  local marker = state == 'checked' and markers[1] or checkbox_checked_marker(markers)
+  if state == 'partial' and config.options.checkbox_partials_toggle == 0 then
     marker = markers[1]
   end
   item.checkbox.marker = marker
@@ -1122,19 +1114,19 @@ function M.recompute_checkboxes()
 end
 
 function M.demote()
-  return change_current_line_level("demote")
+  return change_current_line_level 'demote'
 end
 
 function M.promote()
-  return change_current_line_level("promote")
+  return change_current_line_level 'promote'
 end
 
 function M.demote_visual(first, last)
-  return change_visual_level("demote", first, last)
+  return change_visual_level('demote', first, last)
 end
 
 function M.promote_visual(first, last)
-  return change_visual_level("promote", first, last)
+  return change_visual_level('promote', first, last)
 end
 
 function M.select_checkbox() end

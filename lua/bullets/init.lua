@@ -1,24 +1,24 @@
-local config = require("bullets.config")
+local config = require 'bullets.config'
 
 local M = {}
 M.did_setup = false
 
-local augroup = vim.api.nvim_create_augroup("bullets.nvim", { clear = true })
+local augroup = vim.api.nvim_create_augroup('bullets.nvim', { clear = true })
 
 local function actions()
-  return require("bullets.actions")
+  return require 'bullets.actions'
 end
 
 local function command(name, fn, opts)
-  vim.api.nvim_create_user_command(name, fn, vim.tbl_extend("force", { force = true }, opts or {}))
+  vim.api.nvim_create_user_command(name, fn, vim.tbl_extend('force', { force = true }, opts or {}))
 end
 
 local function map(mode, lhs, rhs, opts)
-  vim.keymap.set(mode, lhs, rhs, vim.tbl_extend("force", { silent = true }, opts or {}))
+  vim.keymap.set(mode, lhs, rhs, vim.tbl_extend('force', { silent = true }, opts or {}))
 end
 
 local function map_buffer(buf, mode, lhs, rhs, opts)
-  vim.keymap.set(mode, lhs, rhs, vim.tbl_extend("force", { buffer = buf, silent = true }, opts or {}))
+  vim.keymap.set(mode, lhs, rhs, vim.tbl_extend('force', { buffer = buf, silent = true }, opts or {}))
 end
 
 local function keys(lhs)
@@ -26,109 +26,109 @@ local function keys(lhs)
 end
 
 local function add_commands()
-  command("InsertNewBullet", function()
+  command('InsertNewBullet', function()
     actions().insert_new_bullet()
   end)
-  command("RenumberList", function()
+  command('RenumberList', function()
     actions().renumber_list()
   end)
-  command("RenumberSelection", function(opts)
+  command('RenumberSelection', function(opts)
     actions().renumber_selection(opts.line1, opts.line2)
   end, { range = true })
-  command("ToggleCheckbox", function()
+  command('ToggleCheckbox', function()
     actions().toggle_checkbox()
   end)
-  command("RecomputeCheckboxes", function()
+  command('RecomputeCheckboxes', function()
     actions().recompute_checkboxes()
   end)
-  command("BulletDemote", function()
+  command('BulletDemote', function()
     actions().demote()
   end)
-  command("BulletPromote", function()
+  command('BulletPromote', function()
     actions().promote()
   end)
-  command("BulletDemoteVisual", function(opts)
+  command('BulletDemoteVisual', function(opts)
     actions().demote_visual(opts.line1, opts.line2)
   end, { range = true })
-  command("BulletPromoteVisual", function(opts)
+  command('BulletPromoteVisual', function(opts)
     actions().promote_visual(opts.line1, opts.line2)
   end, { range = true })
-  command("SelectCheckbox", function()
+  command('SelectCheckbox', function()
     actions().select_checkbox()
   end)
-  command("SelectCheckboxInside", function()
+  command('SelectCheckboxInside', function()
     actions().select_checkbox_inside()
   end)
-  command("SelectBullet", function()
+  command('SelectBullet', function()
     actions().select_bullet()
   end)
-  command("SelectBulletText", function()
+  command('SelectBulletText', function()
     actions().select_bullet_text()
   end)
 end
 
 local function add_plug_mappings()
-  map("i", "<Plug>(bullets-newline)", function()
+  map('i', '<Plug>(bullets-newline)', function()
     actions().insert_new_bullet()
   end)
-  map("n", "<Plug>(bullets-newline)", function()
+  map('n', '<Plug>(bullets-newline)', function()
     actions().insert_new_bullet()
   end)
-  map("n", "<Plug>(bullets-renumber)", function()
+  map('n', '<Plug>(bullets-renumber)', function()
     actions().renumber_list()
   end)
-  map("x", "<Plug>(bullets-renumber)", ":RenumberSelection<CR>")
-  map("n", "<Plug>(bullets-toggle-checkbox)", function()
+  map('x', '<Plug>(bullets-renumber)', ':RenumberSelection<CR>')
+  map('n', '<Plug>(bullets-toggle-checkbox)', function()
     actions().toggle_checkbox()
   end)
-  map("n", "<Plug>(bullets-recompute-checkboxes)", function()
+  map('n', '<Plug>(bullets-recompute-checkboxes)', function()
     actions().recompute_checkboxes()
   end)
-  map({ "i", "n" }, "<Plug>(bullets-demote)", function()
+  map({ 'i', 'n' }, '<Plug>(bullets-demote)', function()
     actions().demote()
   end)
-  map("x", "<Plug>(bullets-demote)", ":'<,'>BulletDemoteVisual<CR>")
-  map({ "i", "n" }, "<Plug>(bullets-promote)", function()
+  map('x', '<Plug>(bullets-demote)', ":'<,'>BulletDemoteVisual<CR>")
+  map({ 'i', 'n' }, '<Plug>(bullets-promote)', function()
     actions().promote()
   end)
-  map("x", "<Plug>(bullets-promote)", ":'<,'>BulletPromoteVisual<CR>")
+  map('x', '<Plug>(bullets-promote)', ":'<,'>BulletPromoteVisual<CR>")
 end
 
 local function add_default_mappings(buf)
   local opts = config.options
   local leader = opts.mapping_leader
 
-  map_buffer(buf, "i", leader .. "<CR>", "<Plug>(bullets-newline)", { remap = true })
-  map_buffer(buf, "i", leader .. "<C-CR>", "<CR>")
-  map_buffer(buf, "n", leader .. "o", "<Plug>(bullets-newline)", { remap = true })
-  map_buffer(buf, "n", leader .. "gN", "<Plug>(bullets-renumber)", { remap = true })
-  map_buffer(buf, "x", leader .. "gN", "<Plug>(bullets-renumber)", { remap = true })
-  map_buffer(buf, "n", leader .. "<leader>x", "<Plug>(bullets-toggle-checkbox)", { remap = true })
-  map_buffer(buf, "i", leader .. "<C-t>", function()
+  map_buffer(buf, 'i', leader .. '<CR>', '<Plug>(bullets-newline)', { remap = true })
+  map_buffer(buf, 'i', leader .. '<C-CR>', '<CR>')
+  map_buffer(buf, 'n', leader .. 'o', '<Plug>(bullets-newline)', { remap = true })
+  map_buffer(buf, 'n', leader .. 'gN', '<Plug>(bullets-renumber)', { remap = true })
+  map_buffer(buf, 'x', leader .. 'gN', '<Plug>(bullets-renumber)', { remap = true })
+  map_buffer(buf, 'n', leader .. '<leader>x', '<Plug>(bullets-toggle-checkbox)', { remap = true })
+  map_buffer(buf, 'i', leader .. '<C-t>', function()
     if not actions().demote() then
-      vim.api.nvim_feedkeys(keys("<C-t>"), "in", false)
+      vim.api.nvim_feedkeys(keys '<C-t>', 'in', false)
     end
   end)
-  map_buffer(buf, "i", leader .. "<C-d>", function()
+  map_buffer(buf, 'i', leader .. '<C-d>', function()
     if not actions().promote() then
-      vim.api.nvim_feedkeys(keys("<C-d>"), "in", false)
+      vim.api.nvim_feedkeys(keys '<C-d>', 'in', false)
     end
   end)
-  map_buffer(buf, "n", leader .. ">>", function()
+  map_buffer(buf, 'n', leader .. '>>', function()
     if not actions().demote() then
-      vim.cmd("normal! >>")
+      vim.cmd 'normal! >>'
     end
   end)
-  map_buffer(buf, "n", leader .. "<<", function()
+  map_buffer(buf, 'n', leader .. '<<', function()
     if not actions().promote() then
-      vim.cmd("normal! <<")
+      vim.cmd 'normal! <<'
     end
   end)
 end
 
 local function should_configure_buffer(buf)
   return vim.tbl_contains(config.options.enabled_file_types, vim.bo[buf].filetype)
-    or (config.options.enable_in_empty_buffers and vim.bo[buf].filetype == "")
+    or (config.options.enable_in_empty_buffers and vim.bo[buf].filetype == '')
 end
 
 local function add_custom_mappings(buf)
@@ -145,9 +145,9 @@ local function configure_buffer(buf)
 end
 
 local function add_autocmds()
-  vim.api.nvim_clear_autocmds({ group = augroup })
+  vim.api.nvim_clear_autocmds { group = augroup }
 
-  vim.api.nvim_create_autocmd("FileType", {
+  vim.api.nvim_create_autocmd('FileType', {
     group = augroup,
     pattern = config.options.enabled_file_types,
     callback = function(event)
@@ -156,11 +156,11 @@ local function add_autocmds()
   })
 
   if config.options.enable_in_empty_buffers then
-    vim.api.nvim_create_autocmd({ "BufNew", "BufRead" }, {
+    vim.api.nvim_create_autocmd({ 'BufNew', 'BufRead' }, {
       group = augroup,
-      pattern = "*",
+      pattern = '*',
       callback = function(event)
-        if vim.bo[event.buf].filetype == "" then
+        if vim.bo[event.buf].filetype == '' then
           configure_buffer(event.buf)
         end
       end,
