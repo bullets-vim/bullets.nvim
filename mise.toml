@@ -7,6 +7,7 @@ lua-language-server = "3"
 neovim = "latest"
 "npm:@kitlangton/stack" = "0.1.5"
 taplo = "latest"
+stylua = "2"
 
 [hooks]
 postinstall = "lefthook install"
