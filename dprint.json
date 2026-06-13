@@ -8,6 +8,7 @@
   "yaml": {
   },
   "excludes": [
+    "CHANGELOG.md",
     "**/*-lock.json"
   ],
   "includes": [
