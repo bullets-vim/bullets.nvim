@@ -1,19 +1,19 @@
 local M = {}
 
 local roman_values = {
-  { 1000, "m" },
-  { 900, "cm" },
-  { 500, "d" },
-  { 400, "cd" },
-  { 100, "c" },
-  { 90, "xc" },
-  { 50, "l" },
-  { 40, "xl" },
-  { 10, "x" },
-  { 9, "ix" },
-  { 5, "v" },
-  { 4, "iv" },
-  { 1, "i" },
+  { 1000, 'm' },
+  { 900, 'cm' },
+  { 500, 'd' },
+  { 400, 'cd' },
+  { 100, 'c' },
+  { 90, 'xc' },
+  { 50, 'l' },
+  { 40, 'xl' },
+  { 10, 'x' },
+  { 9, 'ix' },
+  { 5, 'v' },
+  { 4, 'iv' },
+  { 1, 'i' },
 }
 
 function M.abc_to_number(value)
@@ -21,15 +21,15 @@ function M.abc_to_number(value)
   local lower = value:lower()
 
   for i = 1, #lower do
-    result = result * 26 + lower:byte(i) - string.byte("a") + 1
+    result = result * 26 + lower:byte(i) - string.byte 'a' + 1
   end
 
   return result
 end
 
 function M.number_to_abc(value, lower)
-  local base = lower and string.byte("a") or string.byte("A")
-  local result = ""
+  local base = lower and string.byte 'a' or string.byte 'A'
+  local result = ''
 
   while value > 0 do
     value = value - 1
@@ -66,7 +66,7 @@ function M.roman_to_number(value)
 end
 
 function M.number_to_roman(value, lower)
-  local result = ""
+  local result = ''
 
   for _, pair in ipairs(roman_values) do
     local number, letters = pair[1], pair[2]

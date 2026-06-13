@@ -1,27 +1,27 @@
-local helpers = require("test.helpers")
+local helpers = require 'test.helpers'
 
-describe("AsciiDoc", function()
+describe('AsciiDoc', function()
   before_each(function()
     helpers.reset_config()
   end)
 
-  it("maintains indentation in ascii doc bullets", function()
+  it('maintains indentation in ascii doc bullets', function()
     helpers.test_bullet_inserted(
-      "rats",
-      { "= Pets!", "* dogs", "** cats" },
-      { "= Pets!", "* dogs", "** cats", "** rats" }
+      'rats',
+      { '= Pets!', '* dogs', '** cats' },
+      { '= Pets!', '* dogs', '** cats', '** rats' }
     )
   end)
 
-  it("supports dot bullets", function()
-    helpers.test_bullet_inserted("cats", { "= Pets!", ". dogs" }, { "= Pets!", ". dogs", ". cats" })
+  it('supports dot bullets', function()
+    helpers.test_bullet_inserted('cats', { '= Pets!', '. dogs' }, { '= Pets!', '. dogs', '. cats' })
   end)
 
-  it("supports nested dot bullets", function()
+  it('supports nested dot bullets', function()
     helpers.test_bullet_inserted(
-      "rats",
-      { "= Pets!", ". dogs", ".. cats" },
-      { "= Pets!", ". dogs", ".. cats", ".. rats" }
+      'rats',
+      { '= Pets!', '. dogs', '.. cats' },
+      { '= Pets!', '. dogs', '.. cats', '.. rats' }
     )
   end)
 end)
