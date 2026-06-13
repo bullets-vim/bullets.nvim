@@ -11,7 +11,7 @@ describe('Bullets.vim', function()
       vim.opt.tabstop = 4
     end)
 
-    it('demotes a bullet one outline level', function()
+    it('demotes a bullet one outline level #ON-001', function()
       helpers.new_buffer {
         '# Hello there',
         'I. this is the first bullet',
@@ -27,7 +27,7 @@ describe('Bullets.vim', function()
       }, helpers.get_lines())
     end)
 
-    it('promotes a bullet one outline level', function()
+    it('promotes a bullet one outline level #ON-002', function()
       helpers.new_buffer {
         '# Hello there',
         'I. this is the first bullet',
@@ -45,7 +45,7 @@ describe('Bullets.vim', function()
       }, helpers.get_lines())
     end)
 
-    it('demotes an empty bullet', function()
+    it('demotes an empty bullet #ON-011', function()
       helpers.new_buffer {
         '# Hello there',
         'I. this is the first bullet',
@@ -60,7 +60,7 @@ describe('Bullets.vim', function()
       }, helpers.get_lines())
     end)
 
-    it('promotes an empty bullet', function()
+    it('promotes an empty bullet #ON-012', function()
       helpers.new_buffer {
         '# Hello there',
         'I. this is the first bullet',
@@ -77,7 +77,7 @@ describe('Bullets.vim', function()
       }, helpers.get_lines())
     end)
 
-    it('uses configured outline levels', function()
+    it('uses configured outline levels #ON-004', function()
       require('bullets').setup { outline_levels = { 'num', 'ABC', 'std*' } }
       helpers.new_buffer {
         '# Hello there',
@@ -103,7 +103,7 @@ describe('Bullets.vim', function()
       }, helpers.get_lines())
     end)
 
-    it('preserves the last standard outline level when demoting beyond configured levels', function()
+    it('preserves the last standard outline level when demoting beyond configured levels #ON-005', function()
       helpers.new_buffer {
         '# Hello there',
         '\t\t\t\t\t\t\t+ ninth bullet',
@@ -118,7 +118,7 @@ describe('Bullets.vim', function()
       }, helpers.get_lines())
     end)
 
-    it('removes a bullet when promoting at the top outline level', function()
+    it('removes a bullet when promoting at the top outline level #ON-003', function()
       helpers.new_buffer {
         '# Hello there',
         'I. first bullet',
@@ -132,7 +132,7 @@ describe('Bullets.vim', function()
       }, helpers.get_lines())
     end)
 
-    it('promotes bullets in a visual range', function()
+    it('promotes bullets in a visual range #ON-006', function()
       require('bullets').setup { outline_levels = { 'num', 'abc', 'std*' } }
       helpers.new_buffer {
         '# Hello there',
@@ -151,7 +151,7 @@ describe('Bullets.vim', function()
       }, helpers.get_lines())
     end)
 
-    it('demotes bullets in a visual range', function()
+    it('demotes bullets in a visual range #ON-007', function()
       require('bullets').setup { outline_levels = { 'num', 'abc', 'std*' } }
       helpers.new_buffer {
         '# Hello there',

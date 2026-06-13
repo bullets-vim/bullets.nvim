@@ -13,11 +13,11 @@ describe('Bullets.vim', function()
     }
   end)
 
-  it('loads the plugin', function()
+  it('loads the plugin #ACT-001', function()
     assert.equals(2, vim.fn.exists ':InsertNewBullet')
   end)
 
-  it('preserves native normal-mode o behavior', function()
+  it('preserves native normal-mode o behavior #ACT-002', function()
     vim.cmd 'enew'
     vim.bo.filetype = 'text'
     vim.api.nvim_buf_set_lines(0, 0, -1, false, { 'plain' })
@@ -28,7 +28,7 @@ describe('Bullets.vim', function()
     assert.are.same({ 'plain', 'hello' }, vim.api.nvim_buf_get_lines(0, 0, -1, false))
   end)
 
-  it('preserves native insert-mode return fallback', function()
+  it('preserves native insert-mode return fallback #ACT-003', function()
     vim.cmd 'enew'
     vim.bo.filetype = 'text'
     vim.api.nvim_buf_set_lines(0, 0, -1, false, { 'plain' })
@@ -39,7 +39,7 @@ describe('Bullets.vim', function()
     assert.are.same({ 'plain', 'next' }, vim.api.nvim_buf_get_lines(0, 0, -1, false))
   end)
 
-  it('does not install default mappings when disabled', function()
+  it('does not install default mappings when disabled #ACT-004', function()
     require('bullets').setup {
       enabled_file_types = { 'text' },
       set_mappings = false,
@@ -51,7 +51,7 @@ describe('Bullets.vim', function()
     assert.equals('', vim.fn.maparg('>>', 'n'))
   end)
 
-  it('inserts a new bullet on <CR>', function()
+  it('inserts a new bullet on <CR> #ACT-005', function()
     vim.cmd 'enew'
     vim.bo.filetype = 'text'
     vim.api.nvim_buf_set_lines(0, 0, -1, false, { '- first item' })

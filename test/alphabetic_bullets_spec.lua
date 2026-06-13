@@ -6,7 +6,7 @@ describe('Bullets.vim', function()
       helpers.reset_config()
     end)
 
-    it('adds a new upper case bullet', function()
+    it('adds a new upper case bullet #OLN-004', function()
       helpers.new_buffer {
         '# Hello there',
         'A. this is the first bullet',
@@ -30,7 +30,7 @@ describe('Bullets.vim', function()
       }, helpers.get_lines())
     end)
 
-    it('adds a new lower case bullet', function()
+    it('adds a new lower case bullet #OLN-005', function()
       helpers.new_buffer {
         '# Hello there',
         'a. this is the first bullet',
@@ -79,7 +79,7 @@ describe('Bullets.vim', function()
       }, helpers.get_lines())
     end)
 
-    it('does not add a new bullet when mixed case', function()
+    it('does not add a new bullet when mixed case #MR-008', function()
       -- "Ab." is mixed case so the plugin doesn't recognise it as a bullet.
       -- CR is therefore deferred via feedkeys('n'); the 'tx' flag in our outer
       -- feedkeys drains that deferred CR, leaving normal mode on a new empty line.
@@ -98,7 +98,7 @@ describe('Bullets.vim', function()
     end)
 
     describe('g:bullets_max_alpha_characters', function()
-      it('stops adding items after configured max (default 2)', function()
+      it('stops adding items after configured max (default 2) #OLN-006', function()
         require('bullets').setup { renumber_on_change = false }
         helpers.new_buffer {
           '# Hello there',
@@ -119,7 +119,7 @@ describe('Bullets.vim', function()
         }, helpers.get_lines())
       end)
 
-      it('does not bullets if configured as 0', function()
+      it('does not bullets if configured as 0 #MR-009', function()
         require('bullets').setup { max_alpha_characters = 0 }
         helpers.new_buffer {
           '# Hello there',

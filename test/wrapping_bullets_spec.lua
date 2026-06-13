@@ -5,7 +5,7 @@ describe('wrapped bullets', function()
     helpers.reset_config()
   end)
 
-  it('inserts a new bullet after a wrapped bullet', function()
+  it('inserts a new bullet after a wrapped bullet #WL-001', function()
     helpers.test_bullet_inserted('do that', {
       '# Hello there',
       '- do this',
@@ -18,7 +18,7 @@ describe('wrapped bullets', function()
     })
   end)
 
-  it('does not insert wrapped bullets when disabled', function()
+  it('does not insert wrapped bullets when disabled #WL-002', function()
     require('bullets').setup { enable_wrapped_lines = false }
     helpers.new_buffer {
       '# Hello there',
@@ -35,7 +35,7 @@ describe('wrapped bullets', function()
     }, helpers.get_lines())
   end)
 
-  it('does not insert wrapped bullets unnecessarily', function()
+  it('does not insert wrapped bullets unnecessarily #WL-003', function()
     -- When <CR> is pressed on a non-bullet line the plugin defers the actual
     -- newline via feedkeys('n'). Using two separate feedkeys calls ensures the
     -- deferred CR fires (the 'x' flag drains it) before we type the next text.
@@ -64,7 +64,7 @@ describe('wrapped bullets', function()
     }, helpers.get_lines())
   end)
 
-  it('does not insert wrapped bullets after whitespace-only separators', function()
+  it('does not insert wrapped bullets after whitespace-only separators #WL-004', function()
     helpers.new_buffer {
       '# Hello there',
       '- do this',
