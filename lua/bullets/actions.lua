@@ -364,7 +364,11 @@ end
 
 local function checkbox_continuation_prefix(bullet, prefix)
   local checkbox = parse_checkbox_text(bullet.text)
-  local unchecked = checkbox and checkbox_unchecked_marker()
+  if not checkbox then
+    return prefix
+  end
+
+  local unchecked = checkbox_unchecked_marker()
   if not unchecked then
     return prefix
   end
@@ -637,22 +641,6 @@ local function spaced_lines(prefix)
   return lines, #lines
 end
 
-local function previous_bullet_with_indent(lnum, indent)
-  for row = lnum - 1, 1, -1 do
-    local line = vim.api.nvim_buf_get_lines(0, row - 1, row, false)[1]
-    if line:match '^%s*$' then
-      return nil
-    end
-
-    local previous = resolve_bullet(parse_line(line), row)
-    if previous and previous.indent == indent then
-      return previous
-    end
-  end
-
-  return nil
-end
-
 local function previous_parent_bullet(lnum, indent)
   for row = lnum - 1, 1, -1 do
     local line = vim.api.nvim_buf_get_lines(0, row - 1, row, false)[1]
@@ -820,7 +808,7 @@ local function last_bullet_line(lnum, min_indent)
     if bullet then
       last = row
       blank_lines = 0
-    elseif line:match '^%s*$' then
+    elseif line and line:match '^%s*$' then
       blank_lines = blank_lines + 1
       if blank_lines >= config.options.line_spacing then
         break
@@ -1066,6 +1054,10 @@ local function set_descendant_checkboxes(lnum, bullet, marker)
   local blank_lines = 0
   for row = lnum + 1, line_count do
     local descendant_bullet, line = bullet_at(row)
+    if not line then
+      break
+    end
+
     if line:match '^%s*$' then
       blank_lines = blank_lines + 1
       if blank_lines >= config.options.line_spacing then
@@ -1079,7 +1071,7 @@ local function set_descendant_checkboxes(lnum, bullet, marker)
         end
 
         local item = checkbox_item(row)
-        if item.checkbox then
+        if item and item.checkbox then
           item.checkbox.marker = marker
           item.checkbox.index = checkbox_marker_index(marker, item.checkbox.markers)
           set_checkbox_marker(row, item.bullet, item.checkbox, marker)
