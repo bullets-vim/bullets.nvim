@@ -1,4 +1,0 @@
-allowBuilds:
-  # postinstall: only checks CI/OPENSPEC_NO_COMPLETIONS, verifies dist/,
-  # then prints: "Tip: Run 'openspec completion install' for shell completions"
-  "@fission-ai/openspec": false

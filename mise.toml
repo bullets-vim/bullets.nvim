@@ -11,7 +11,7 @@ stylua = "2"
 aube = "latest"
 ripgrep = "latest"
 node = "24"
-"npm:@fission-ai/openspec" = "latest"
+"npm:@fission-ai/openspec" = { version = "latest", aube_args = "--deny-build=@fission-ai/openspec" }
 
 [settings]
 # use aube instead of npm when using npm:<package>
@@ -39,7 +39,7 @@ run = "dprint check"
 [tasks."openspec:check"]
 description = "Validate OpenSpec artifacts"
 run = """
-aube exec openspec validate --all --strict --no-interactive
+openspec validate --all --strict --no-interactive
 node scripts/check-spec-test-links.mjs check
 """
 
@@ -67,7 +67,7 @@ run = "node scripts/check-spec-test-links.mjs uncovered-spec-files"
 
 [tasks."spec:list"]
 description = "List OpenSpec specs"
-run = "aube exec openspec list --specs"
+run = "openspec list --specs"
 
 [tasks."spec:untested"]
 description = "List OpenSpec scenarios with no test coverage"
