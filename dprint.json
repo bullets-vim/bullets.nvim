@@ -19,7 +19,8 @@
   },
   "excludes": [
     "CHANGELOG.md",
-    "**/*-lock.json"
+    "**/*-lock.json",
+    "aube-lock.yaml"
   ],
   "includes": [
     "**/*.lua",

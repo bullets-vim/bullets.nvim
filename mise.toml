@@ -8,6 +8,11 @@ neovim = "latest"
 "npm:@kitlangton/stack" = "0.1.5"
 taplo = "latest"
 stylua = "2"
+aube = "latest"
+
+[env]
+OPENSPEC_TELEMETRY = 0
+DO_NOT_TRACK = 1
 
 [hooks]
 postinstall = "lefthook install"
