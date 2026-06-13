@@ -22,7 +22,7 @@ jobs:
           signing-gpg-private-key: ${{ secrets.RELEASE_PLEASE_GPG_PRIVATE_KEY }}
           signing-gpg-passphrase: ${{ secrets.RELEASE_PLEASE_GPG_PASSPHRASE }}
           signing-gpg-key-id: ${{ secrets.RELEASE_PLEASE_GPG_KEY_ID }}
-          signing-commit-author-name: Dorian Karter
-          signing-commit-author-email: dkarter@users.noreply.github.com
+          signing-commit-author-name: release-please-signer
+          signing-commit-author-email: 293262735+release-please-signer@users.noreply.github.com
           signing-commit-committer-name: release-please-signer
           signing-commit-committer-email: 293262735+release-please-signer@users.noreply.github.com
