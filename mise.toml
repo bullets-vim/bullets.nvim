@@ -11,10 +11,19 @@ stylua = "2"
 aube = "latest"
 ripgrep = "latest"
 node = "24"
+"npm:@fission-ai/openspec" = "latest"
+
+[settings]
+# use aube instead of npm when using npm:<package>
+npm.package_manager = "aube"
 
 [env]
 OPENSPEC_TELEMETRY = 0
 DO_NOT_TRACK = 1
+# @kitlangton/stack@0.2.0 is a low-traffic direct mise tool with npm trusted-publisher provenance.
+AUBE_ALLOWED_UNPOPULAR_PACKAGES = "@kitlangton/stack"
+# Exact Effect beta exceptions needed by mise's aube-backed npm tool installs.
+AUBE_TRUST_POLICY_EXCLUDE = "@effect/platform-node@4.0.0-beta.64,@effect/platform-node-shared@4.0.0-beta.83,effect@4.0.0-beta.64,effect@4.0.0-beta.83"
 
 [hooks]
 postinstall = "lefthook install"
