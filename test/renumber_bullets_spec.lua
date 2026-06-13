@@ -5,7 +5,7 @@ describe('re-numbering', function()
     helpers.reset_config()
   end)
 
-  it('renumbers a selected list correctly', function()
+  it('renumbers a selected list correctly #RN-001', function()
     helpers.new_buffer {
       '# Hello there',
       '33. this is the first bullet',
@@ -23,7 +23,7 @@ describe('re-numbering', function()
     }, helpers.get_lines())
   end)
 
-  it('renumbers a list containing checkboxes', function()
+  it('renumbers a list containing checkboxes #RN-002', function()
     helpers.new_buffer {
       '# Hello there',
       '33. this is the first bullet',
@@ -55,7 +55,7 @@ describe('re-numbering', function()
     }, helpers.get_lines())
   end)
 
-  it('renumbers a nested list', function()
+  it('renumbers a nested list #RN-003', function()
     require('bullets').setup { line_spacing = 2 }
     helpers.new_buffer {
       '# Hello there',
@@ -179,7 +179,7 @@ describe('re-numbering', function()
     }, helpers.get_lines())
   end)
 
-  it('visually renumbers a nested list', function()
+  it('visually renumbers a nested list #RN-004', function()
     require('bullets').setup { line_spacing = 2 }
     helpers.new_buffer {
       '# Hello there',

@@ -1,0 +1,29 @@
+schema: spec-driven
+
+context: |
+  Project: bullets.nvim, a Neovim Lua plugin for continuing, renumbering,
+  promoting, demoting, and toggling bullet lists.
+
+  Runtime: Neovim Lua. Vim and Vimscript configuration are unsupported.
+  Users configure the plugin with require("bullets").setup({}) or lazy.nvim opts.
+
+  Tests: Busted-style Lua specs under test/ run in headless Neovim with plenary.
+  Use `mise run test` for the test suite and `mise run fmt:check` for formatting checks.
+
+  Conventions: keep behavior changes small, prefer existing patterns in lua/bullets,
+  update README.md when user-facing commands, mappings, or options change, and encode
+  behavior expectations in OpenSpec specs before implementation.
+
+rules:
+  proposal:
+    - Keep proposals focused on one plugin behavior or API surface.
+    - Include explicit non-goals when a feature could affect mappings, commands, or configuration.
+  design:
+    - Reference the Lua module or test file that owns the behavior.
+    - Prefer minimal implementation changes over new abstractions.
+  tasks:
+    - Include tests for observable behavior changes.
+    - Include documentation updates when user-facing behavior changes.
+  specs:
+    - Give every test-backed scenario a stable ID in the heading, for example `{#LC-001}`.
+    - Keep scenario IDs referenced from tests with Busted-style `#LC-001` tags in test names.

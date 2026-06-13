@@ -2,7 +2,7 @@ local helpers = require 'test.helpers'
 
 describe('checkboxes', function()
   describe('inserting checkboxes', function()
-    it('inserts another checkbox after the previous one', function()
+    it('inserts another checkbox after the previous one #CS-001', function()
       helpers.test_bullet_inserted(
         'do that',
         { '# Hello there', '- [ ] do this' },
@@ -10,7 +10,7 @@ describe('checkboxes', function()
       )
     end)
 
-    it('inserts a * checkbox after the previous one', function()
+    it('inserts a * checkbox after the previous one #CS-002', function()
       helpers.test_bullet_inserted(
         'do that',
         { '# Hello there', '* [ ] do this' },
@@ -18,7 +18,7 @@ describe('checkboxes', function()
       )
     end)
 
-    it('inserts an empty checkbox even if prev line was checked', function()
+    it('inserts an empty checkbox even if prev line was checked #CS-003', function()
       helpers.test_bullet_inserted(
         'do that',
         { '# Hello there', '- [x] do this' },
@@ -32,7 +32,7 @@ describe('checkboxes', function()
       helpers.reset_config()
     end)
 
-    it('toggle a bullet', function()
+    it('toggle a bullet #CS-004', function()
       helpers.new_buffer {
         '# Hello there',
         '- [ ] first bullet',
@@ -71,7 +71,7 @@ describe('checkboxes', function()
       }, helpers.get_lines())
     end)
 
-    it('toggle a bullet and adjust parent', function()
+    it('toggle a bullet and adjust parent #CS-006', function()
       helpers.new_buffer {
         '# Hello there',
         '- [ ] first bullet',
@@ -88,7 +88,7 @@ describe('checkboxes', function()
       }, helpers.get_lines())
     end)
 
-    it('toggle a bullet and adjust children', function()
+    it('toggle a bullet and adjust children #CS-007', function()
       helpers.new_buffer {
         '# Hello there',
         '- [ ] first bullet',
@@ -105,7 +105,7 @@ describe('checkboxes', function()
       }, helpers.get_lines())
     end)
 
-    it('does not toggle checkboxes after a blank separator', function()
+    it('does not toggle checkboxes after a blank separator #CS-008', function()
       helpers.new_buffer {
         '# Hello there',
         '- [ ] first bullet',
@@ -124,7 +124,7 @@ describe('checkboxes', function()
       }, helpers.get_lines())
     end)
 
-    it('toggle a bullet and calculate completion', function()
+    it('toggle a bullet and calculate completion #CS-009', function()
       helpers.new_buffer {
         '# Hello there',
         '- [ ] first bullet',
@@ -196,7 +196,7 @@ describe('checkboxes', function()
       }, helpers.get_lines())
     end)
 
-    it('adds and toggles bullets using UTF characters', function()
+    it('adds and toggles bullets using UTF characters #CS-005', function()
       require('bullets').setup { checkbox_markers = '✗○◐●✓' }
       -- Ensure <C-t> produces tabs (not spaces) regardless of user config
       vim.opt.expandtab = false
@@ -232,7 +232,7 @@ describe('checkboxes', function()
       }, helpers.get_lines())
     end)
 
-    it('recomputes checkboxes recursively on RecomputeCheckboxes', function()
+    it('recomputes checkboxes recursively on RecomputeCheckboxes #CS-010', function()
       require('bullets').setup { checkbox_markers = ' .¼½¾X' }
       helpers.new_buffer {
         '# Hello there',
@@ -285,7 +285,7 @@ describe('checkboxes', function()
       }, helpers.get_lines())
     end)
 
-    it('recomputes checkboxes correctly on reindents', function()
+    it('recomputes checkboxes correctly on reindents #CS-011', function()
       require('bullets').setup { checkbox_markers = ' /X' }
       helpers.new_buffer {
         '# Hello there',
@@ -314,7 +314,7 @@ describe('checkboxes', function()
       }, helpers.get_lines())
     end)
 
-    it('handles skip-level checkbox trees', function()
+    it('handles skip-level checkbox trees #CS-012', function()
       require('bullets').setup { checkbox_markers = ' /X' }
       helpers.new_buffer {
         '# Hello there',

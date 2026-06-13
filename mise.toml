@@ -5,9 +5,25 @@ gitleaks = "latest"
 lefthook = "latest"
 lua-language-server = "3"
 neovim = "latest"
-"npm:@kitlangton/stack" = "0.1.5"
+"npm:@kitlangton/stack" = "latest"
 taplo = "latest"
 stylua = "2"
+aube = "latest"
+ripgrep = "latest"
+node = "24"
+"npm:@fission-ai/openspec" = { version = "latest", aube_args = "--deny-build=@fission-ai/openspec" }
+
+[settings]
+# use aube instead of npm when using npm:<package>
+npm.package_manager = "aube"
+
+[env]
+OPENSPEC_TELEMETRY = 0
+DO_NOT_TRACK = 1
+# @kitlangton/stack@0.2.0 is a low-traffic direct mise tool with npm trusted-publisher provenance.
+AUBE_ALLOWED_UNPOPULAR_PACKAGES = "@kitlangton/stack"
+# Exact Effect beta exceptions needed by mise's aube-backed npm tool installs.
+AUBE_TRUST_POLICY_EXCLUDE = "@effect/platform-node@4.0.0-beta.64,@effect/platform-node-shared@4.0.0-beta.83,effect@4.0.0-beta.64,effect@4.0.0-beta.83"
 
 [hooks]
 postinstall = "lefthook install"
@@ -20,6 +36,51 @@ run = "dprint fmt"
 description = "Check code formatting with dprint"
 run = "dprint check"
 
+[tasks."openspec:check"]
+description = "Validate OpenSpec artifacts"
+run = """
+openspec validate --all --strict --no-interactive
+node scripts/check-spec-test-links.mjs check
+"""
+
+[tasks."spec:coverage"]
+description = "Report OpenSpec scenario and spec-file test coverage"
+usage = '''
+flag "--json" help="Output coverage as JSON"
+flag "--min-coverage-percent <percent>" help="Fail if scenario coverage is below this percent" default="0"
+'''
+run = """
+#!/usr/bin/env bash
+set -euo pipefail
+
+args=(--min-coverage-percent "${usage_min_coverage_percent?}")
+if [[ "${usage_json:-false}" == "true" ]]; then
+  args+=(--json)
+fi
+
+node scripts/check-spec-test-links.mjs coverage "${args[@]}"
+"""
+
+[tasks."spec:uncovered"]
+description = "List OpenSpec spec files with no test coverage"
+run = "node scripts/check-spec-test-links.mjs uncovered-spec-files"
+
+[tasks."spec:list"]
+description = "List OpenSpec specs"
+run = "openspec list --specs"
+
+[tasks."spec:untested"]
+description = "List OpenSpec scenarios with no test coverage"
+run = "node scripts/check-spec-test-links.mjs untested-scenarios"
+
+[tasks."test:pending"]
+description = "List pending tests with descriptions"
+run = "node scripts/check-spec-test-links.mjs pending-tests"
+
+[tasks."test:unspecified"]
+description = "List active tests with no related OpenSpec scenario tag"
+run = "node scripts/check-spec-test-links.mjs untagged-tests"
+
 [tasks.test]
 description = "Run Neovim test suite via plenary"
 run = """
@@ -30,12 +91,21 @@ fi
 status=0
   for spec in test/*_spec.lua; do
     nvim --headless \
+      -n \
       -c "set rtp+=.,${PLENARY_PATH} | runtime plugin/plenary.vim | runtime plugin/bullets.lua" \
       --noplugin \
       -c "lua require('plenary.busted').run('${spec}')" || status=1
   done
 exit $status
 """
+
+[tasks."test:spec"]
+description = "Run tests tagged with a specific OpenSpec scenario ID"
+usage = '''
+arg "<scenario_id>" help="OpenSpec scenario ID to run"
+complete "scenario_id" run="rg --no-filename --only-matching '#[A-Z][A-Z0-9]+-[0-9]{3}' openspec/specs | tr -d '#' | sort -u"
+'''
+run = "node scripts/run-spec-tag.mjs ${usage_scenario_id?}"
 
 [tasks."lua:lint"]
 description = "List Lua language server diagnostics"
