@@ -3,8 +3,8 @@
 Releases are managed by [release-please](https://github.com/googleapis/release-please) through
 `.github/workflows/release.yml`.
 
-The workflow runs on pushes to `main`. It expects a repository secret named
-`RELEASE_PLEASE_GITHUB_TOKEN`.
+The workflow runs on pushes to `main`. It uses the `RELEASE_PLEASE_GITHUB_TOKEN` repository secret
+when configured and falls back to the workflow `GITHUB_TOKEN` otherwise.
 
 ## Token
 
@@ -37,6 +37,10 @@ gh secret set RELEASE_PLEASE_GITHUB_TOKEN --repo bullets-vim/bullets.nvim
 ```
 
 Paste the token when prompted.
+
+Without this secret, release-please can still run with `GITHUB_TOKEN`, but release PRs and tags created by
+`GITHUB_TOKEN` will not trigger follow-up workflow runs. Use the fine-grained token when release-please PRs
+need normal CI checks.
 
 ## Release Flow
 
