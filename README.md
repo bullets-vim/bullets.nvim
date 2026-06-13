@@ -138,3 +138,7 @@ mise run test
 ```
 
 The test task runs each `test/*_spec.lua` file in headless Neovim with plenary.
+
+## Releases
+
+See [docs/RELEASE.md](docs/RELEASE.md) for release-please setup and token permissions.
