@@ -56,6 +56,42 @@ The plugin SHALL use `outline_levels` to choose marker styles when changing nest
 - WHEN demotion is triggered
 - THEN the item keeps the last standard marker style at a deeper indentation
 
+#### Scenario: Restart numbering in a new outline {#ON-013}
+
+- GIVEN a second outline starts after an empty separator
+- WHEN a child item is inserted in the second outline
+- THEN ordered child numbering starts from the first marker for that outline
+
+#### Scenario: Change levels from mixed starting depths {#ON-014}
+
+- GIVEN list items use different starting outline depths and marker styles
+- WHEN promotion and demotion are triggered from those items
+- THEN each item moves relative to its current outline depth and marker style
+
+#### Scenario: Continue standard markers outside outline levels {#ON-015}
+
+- GIVEN standard unordered markers are enabled but not listed in `outline_levels`
+- WHEN a standard marker is continued and then promoted
+- THEN continuation preserves the standard marker and promotion uses the configured parent outline level
+
+#### Scenario: Insert nested ordered outline sequence {#ON-016}
+
+- GIVEN a list item is continued while repeatedly changing outline levels
+- WHEN inserted items move through configured ordered outline styles
+- THEN numeric, alphabetic, and roman markers increment correctly at each depth
+
+#### Scenario: Change complex visual ranges {#ON-017}
+
+- GIVEN a visual range contains list items, wrapped lines, and different indentation depths
+- WHEN visual promotion or demotion is triggered
+- THEN only recognized list items change to the appropriate outline level
+
+#### Scenario: Preserve line spacing when changing nested bullets {#ON-018}
+
+- GIVEN configured line spacing inserts blank separator lines
+- WHEN nested bullets are continued and demoted around wrapped lines
+- THEN blank spacing and wrapped-line indentation are preserved
+
 ### Requirement: Change visual ranges
 
 The plugin SHALL promote or demote every list item in a visual range.
