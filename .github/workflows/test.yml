@@ -21,6 +21,20 @@ jobs:
       - name: Check formatting
         run: mise run fmt:check
 
+  lint:
+    name: Run Lua Lint
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v6.0.2
+
+      - name: Set up tools via mise
+        uses: jdx/mise-action@v4.0.1
+
+      - name: Run Lua lint
+        run: mise run lua:lint
+
   test:
     name: Run Tests
     runs-on: ubuntu-latest
