@@ -54,25 +54,27 @@ describe('Bullets.vim', function()
       }, helpers.get_lines())
     end)
 
-    pending('adds a new bullet and loops at z', function()
+    it('adds a new bullet and loops at z #OLN-010', function()
       require('bullets').setup { renumber_on_change = false }
       helpers.new_buffer {
         '# Hello there',
         'y. this is the first bullet',
       }
-      -- Type through "third bullet", then press CR twice:
-      -- first CR inserts "ab. " (next bullet after "aa."),
-      -- second CR on empty bullet line triggers delete-last-bullet-if-empty,
-      -- leaving an empty line in normal mode.
-      helpers.feedkeys 'A<CR>second bullet<CR>third bullet<CR><CR>'
-      -- Now in normal mode on empty line 5. Use 'A' to enter insert at end,
-      -- type the override bullet, then continue with remaining bullets.
-      helpers.feedkeys 'AAY. fourth bullet<CR>fifth bullet<CR>sixth bullet<Esc>'
+      helpers.feedkeys 'A<CR>second bullet<CR>third bullet<Esc>'
       assert.are.same({
         '# Hello there',
         'y. this is the first bullet',
         'z. second bullet',
         'aa. third bullet',
+      }, helpers.get_lines())
+
+      helpers.new_buffer {
+        '# Hello there',
+        'AY. fourth bullet',
+      }
+      helpers.feedkeys 'A<CR>fifth bullet<CR>sixth bullet<Esc>'
+      assert.are.same({
+        '# Hello there',
         'AY. fourth bullet',
         'AZ. fifth bullet',
         'BA. sixth bullet',

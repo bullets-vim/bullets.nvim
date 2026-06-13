@@ -50,6 +50,12 @@ The plugin SHALL continue alphabetic list markers while preserving case and resp
 - WHEN bullet insertion is triggered at the end of the line
 - THEN the inserted line uses the next lowercase alphabetic marker
 
+#### Scenario: Alphabetic marker rolls over after z {#OLN-010}
+
+- GIVEN the current line is an alphabetic list item ending near `z`
+- WHEN bullet insertion is triggered repeatedly
+- THEN the inserted markers roll over to multi-letter alphabetic markers with the same case
+
 #### Scenario: Alphabetic marker length limit {#OLN-006}
 
 - GIVEN the next alphabetic marker would exceed `max_alpha_characters`

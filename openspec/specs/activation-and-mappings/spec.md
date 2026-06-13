@@ -42,6 +42,13 @@ The plugin SHALL not install default mappings when default mappings are disabled
 - WHEN a supported buffer is opened
 - THEN default normal-mode bullet mappings are not installed
 
+#### Scenario: Empty buffer mappings disabled by default {#ACT-006}
+
+- GIVEN a new buffer has no filetype
+- AND empty-buffer activation is disabled
+- WHEN insert-mode return is used after a bullet-like line
+- THEN Neovim inserts a plain newline without continuing the bullet marker
+
 ### Requirement: Apply newline mapping in supported buffers
 
 The plugin SHALL install the newline continuation mapping in configured filetypes when mappings are enabled.
@@ -52,3 +59,9 @@ The plugin SHALL install the newline continuation mapping in configured filetype
 - AND the current line is a recognized bullet item
 - WHEN insert-mode return is used at the end of the line
 - THEN a continued bullet item is inserted
+
+#### Scenario: Text file buffers are supported {#ACT-007}
+
+- GIVEN a `.txt` buffer is opened
+- WHEN Neovim detects its filetype
+- THEN the buffer has a text-compatible filetype supported by the plugin defaults
