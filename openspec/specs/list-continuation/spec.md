@@ -39,6 +39,7 @@ The plugin SHALL handle an empty continued list item according to `delete_last_b
 - AND the current line is an empty list item
 - WHEN bullet insertion is triggered
 - THEN the empty list item is removed
+- AND the cursor remains on the same line
 
 #### Scenario: Promote empty item {#LC-004}
 
