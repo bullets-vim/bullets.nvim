@@ -16,8 +16,11 @@ With [lazy.nvim](https://github.com/folke/lazy.nvim):
 Configure options through `opts`:
 
 ```lua
-{
+-- automatic bulleted lists
+---@type LazySpec
+return {
   "bullets-vim/bullets.nvim",
+  ---@type bullets.Config
   opts = {
     enabled_file_types = { "markdown", "text", "gitcommit" },
     mapping_leader = "",
@@ -38,7 +41,11 @@ Configure this plugin only with `require("bullets").setup({})` or lazy.nvim `opt
 
 Defaults from `lua/bullets/config.lua`:
 
+The `bullets.Config` type annotation gives LuaLS completion and diagnostics for
+available options when this plugin is in your editor's Lua workspace.
+
 ```lua
+---@type bullets.Config
 {
   enabled_file_types = { "markdown", "text", "gitcommit" },
   enable_in_empty_buffers = false,
