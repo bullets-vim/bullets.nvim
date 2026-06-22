@@ -168,6 +168,7 @@ local function add_autocmds()
   end
 end
 
+---@param options? bullets.Config
 function M.setup(options)
   M.did_setup = true
   config.setup(options)

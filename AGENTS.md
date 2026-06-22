@@ -1,5 +1,10 @@
 # Agent Notes
 
+## Documentation Maintenance
+
+Whenever adding an option to @lua/bullets/config.lua be sure to also document it
+in README.md
+
 ## OpenSpec
 
 OpenSpec specs live under `openspec/specs/<capability>/spec.md`. Keep specs split by user-facing capability instead of by Lua module or test file.
