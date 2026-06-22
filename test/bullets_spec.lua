@@ -220,17 +220,16 @@ describe('Bullets.vim', function()
         helpers.new_buffer {
           '# Hello there',
           '- this is the first bullet',
+          '- ',
         }
-        -- First CR creates "- " empty bullet, second CR on empty bullet deletes it
-        helpers.feedkeys 'A<CR><CR>'
+        -- CR on empty bullet deletes it
+        helpers.feedkeys 'A<CR>'
         local lines = helpers.get_lines()
-        -- Strip trailing empty lines before comparison.
-        while #lines > 0 and lines[#lines] == '' do
-          table.remove(lines)
-        end
+
         assert.are.same({
           '# Hello there',
           '- this is the first bullet',
+          '', -- cursor should be here, we do not want to remove the line
         }, lines)
       end)
 

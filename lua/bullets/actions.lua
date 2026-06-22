@@ -377,7 +377,7 @@ local function checkbox_continuation_prefix(bullet, prefix)
 end
 
 local function is_empty_bullet_text(text)
-  if text == '' then
+  if text:match '^%s*$' then
     return true
   end
 
@@ -905,17 +905,6 @@ function M.insert_new_bullet()
     end
 
     feed_cr()
-    return ''
-  end
-
-  if bullet.text:match '^%s*$' and config.options.delete_last_bullet_if_empty == 1 then
-    if mode ~= 'n' then
-      vim.api.nvim_feedkeys(keys '<Esc>ddi', 'n', false)
-      return ''
-    end
-
-    vim.api.nvim_buf_set_lines(0, lnum - 1, lnum, false, {})
-    vim.cmd.startinsert()
     return ''
   end
 
