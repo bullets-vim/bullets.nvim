@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.1](https://github.com/bullets-vim/bullets.nvim/compare/v1.0.0...v1.0.1) (2026-06-22)
+
+
+### Bug Fixes
+
+* keep line after deleting empty bullet ([#27](https://github.com/bullets-vim/bullets.nvim/issues/27)) ([0bb80df](https://github.com/bullets-vim/bullets.nvim/commit/0bb80dfd01ca68c7db3b932dc32cf04df5777bfa))
+
 ## 1.0.0 (2026-06-13)
 
 
