@@ -65,10 +65,15 @@ available options when this plugin is in your editor's Lua workspace.
   checkbox_markers = " .oOX",
   checkbox_partials_toggle = 1,
   auto_indent_after_colon = true,
+  markdown_headings = false,
 }
 ```
 
 `custom_mappings` entries are passed to `vim.keymap.set` as `{ mode, lhs, rhs }` for each configured buffer.
+
+When `markdown_headings = true`, the promote and demote actions also change ATX heading levels in `markdown`
+buffers: demoting `## Title` gives `### Title` and promoting it gives `# Title`. Levels stay between 1 and 6, and
+`#` lines inside fenced code blocks or YAML front matter are left alone.
 
 ## Commands
 
