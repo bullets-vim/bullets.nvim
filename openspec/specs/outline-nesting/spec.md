@@ -108,6 +108,54 @@ The plugin SHALL promote or demote every list item in a visual range.
 - WHEN visual demotion is triggered
 - THEN each selected list item moves to the next configured outline level
 
+### Requirement: Change Markdown heading levels
+
+The plugin SHALL promote and demote Markdown ATX headings with the outline level actions when `markdown_headings` is enabled.
+
+#### Scenario: Demote a Markdown heading {#ON-019}
+
+- GIVEN `markdown_headings` is enabled
+- AND the current buffer has the `markdown` filetype
+- AND the current line is an ATX heading
+- WHEN demotion is triggered
+- THEN the heading gains one `#` and its text is preserved
+
+#### Scenario: Promote a Markdown heading {#ON-020}
+
+- GIVEN `markdown_headings` is enabled
+- AND the current buffer has the `markdown` filetype
+- AND the current line is an ATX heading below level 1
+- WHEN promotion is triggered
+- THEN the heading loses one `#` and its text is preserved
+
+#### Scenario: Keep headings within valid levels {#ON-021}
+
+- GIVEN `markdown_headings` is enabled
+- AND the current line is a level 1 heading or a level 6 heading
+- WHEN promotion of the level 1 heading or demotion of the level 6 heading is triggered
+- THEN the line is unchanged and is not indented
+
+#### Scenario: Ignore heading-like lines in code and front matter {#ON-022}
+
+- GIVEN `markdown_headings` is enabled
+- AND a line starting with `#` is inside a fenced code block or YAML front matter
+- WHEN demotion is triggered on that line
+- THEN the line is treated as plain text instead of a heading
+
+#### Scenario: Markdown headings disabled by default {#ON-023}
+
+- GIVEN `markdown_headings` is not configured
+- AND the current line is an ATX heading in a `markdown` buffer
+- WHEN demotion is triggered
+- THEN the heading level is unchanged
+
+#### Scenario: Change headings in visual ranges {#ON-024}
+
+- GIVEN `markdown_headings` is enabled
+- AND a visual range contains ATX headings and list items
+- WHEN visual promotion or demotion is triggered
+- THEN headings change level and list items change outline level
+
 ### Requirement: Auto-indent children after colons
 
 The plugin SHALL insert child list items after continued list items ending in a colon when `auto_indent_after_colon` is enabled.

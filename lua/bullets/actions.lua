@@ -536,7 +536,71 @@ local function fallback_style_for_indent(indent)
   return config.options.outline_levels[indent_depth(indent) + 1]
 end
 
+local function parse_heading(line)
+  local indent, hashes, rest = line:match '^( ? ? ?)(#+)(.*)$'
+  if not hashes or #hashes > 6 or not (rest == '' or rest:match '^[ \t]') then
+    return nil
+  end
+
+  return { indent = indent, level = #hashes, rest = rest }
+end
+
+local function in_markdown_code(lnum)
+  local lines = vim.api.nvim_buf_get_lines(0, 0, lnum - 1, false)
+  local front_matter = false
+  local fence
+  for index, line in ipairs(lines) do
+    if index == 1 and line == '---' then
+      front_matter = true
+    elseif front_matter then
+      front_matter = not (line == '---' or line == '...')
+    else
+      local run, rest = line:match '^ ? ? ?([`~][`~][`~]+)(.*)$'
+      if run and run:match('^' .. vim.pesc(run:sub(1, 1)) .. '+$') then
+        if not fence then
+          fence = run
+        elseif run:sub(1, 1) == fence:sub(1, 1) and #run >= #fence and rest:match '^%s*$' then
+          fence = nil
+        end
+      end
+    end
+  end
+
+  return front_matter or fence ~= nil
+end
+
+-- Returns nil when the line is not a heading the plugin owns, so callers can try list items.
+local function change_heading_level(lnum, direction)
+  if not config.options.markdown_headings or vim.bo.filetype ~= 'markdown' then
+    return nil
+  end
+
+  local line = vim.api.nvim_buf_get_lines(0, lnum - 1, lnum, false)[1]
+  local heading = parse_heading(line)
+  if not heading or in_markdown_code(lnum) then
+    return nil
+  end
+
+  local level = heading.level + (direction == 'demote' and 1 or -1)
+  if level < 1 or level > 6 then
+    -- Handled as a no-op so mappings do not fall back to native indentation.
+    return true
+  end
+
+  vim.api.nvim_buf_set_lines(0, lnum - 1, lnum, false, { heading.indent .. string.rep('#', level) .. heading.rest })
+  local cursor = vim.api.nvim_win_get_cursor(0)
+  if cursor[1] == lnum then
+    vim.api.nvim_win_set_cursor(0, { lnum, math.max(0, cursor[2] + level - heading.level) })
+  end
+  return true
+end
+
 local function change_line_level(lnum, direction)
+  local heading_changed = change_heading_level(lnum, direction)
+  if heading_changed ~= nil then
+    return heading_changed
+  end
+
   local line = vim.api.nvim_buf_get_lines(0, lnum - 1, lnum, false)[1]
   local bullet = resolve_bullet(parse_line(line), lnum)
   if not bullet then
@@ -599,6 +663,11 @@ end
 
 local function change_current_line_level(direction)
   local lnum = vim.api.nvim_win_get_cursor(0)[1]
+  local heading_changed = change_heading_level(lnum, direction)
+  if heading_changed ~= nil then
+    return heading_changed
+  end
+
   local changed = change_line_level(lnum, direction)
   if changed and config.options.renumber_on_change then
     M.renumber_list()

@@ -27,6 +27,7 @@ local M = {}
 ---@field checkbox_markers? string Characters used as checkbox states.
 ---@field checkbox_partials_toggle? 0|1 How partial checkbox states toggle.
 ---@field auto_indent_after_colon? boolean Indent a new child item after a bullet ending in `:`.
+---@field markdown_headings? boolean Promote and demote Markdown ATX headings in `markdown` buffers.
 
 ---@type bullets.Config
 M.defaults = {
@@ -48,6 +49,7 @@ M.defaults = {
   checkbox_markers = ' .oOX',
   checkbox_partials_toggle = 1,
   auto_indent_after_colon = true,
+  markdown_headings = false,
 }
 
 ---@type bullets.Config
