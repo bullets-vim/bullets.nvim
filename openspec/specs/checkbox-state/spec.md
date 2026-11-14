@@ -44,6 +44,49 @@ The plugin SHALL toggle recognized checkbox markers according to configured mark
 - WHEN checkbox items are toggled or inserted
 - THEN the configured markers are used for checkbox state
 
+### Requirement: Cycle checkbox markers
+
+The plugin SHALL cycle a checkbox through every configured marker, including partial markers, when checkbox cycling is triggered.
+
+#### Scenario: Cycle to the next configured marker {#CS-013}
+
+- GIVEN the current line contains a recognized checkbox marker that is not the checked marker
+- WHEN checkbox cycling is triggered
+- THEN the marker advances to the next configured marker
+
+#### Scenario: Cycle wraps after the checked marker {#CS-014}
+
+- GIVEN the current line contains the checked marker
+- WHEN checkbox cycling is triggered
+- THEN the marker becomes the unchecked marker
+
+#### Scenario: Cycling to a partial marker keeps children {#CS-015}
+
+- GIVEN nested checkboxes are enabled
+- AND a parent checkbox has child checkboxes
+- WHEN checkbox cycling moves the parent to a partial marker
+- THEN the parent keeps the partial marker and child checkbox markers are unchanged
+
+#### Scenario: Cycling to checked or unchecked updates children {#CS-016}
+
+- GIVEN nested checkboxes are enabled
+- AND a parent checkbox has child checkboxes
+- WHEN checkbox cycling moves the parent to the checked or unchecked marker
+- THEN child checkbox markers follow the parent marker
+
+#### Scenario: Cycling a child updates ancestors {#CS-017}
+
+- GIVEN nested checkboxes are enabled
+- AND a child checkbox has ancestor checkboxes
+- WHEN checkbox cycling changes the child marker
+- THEN each ancestor checkbox marker reflects its children
+
+#### Scenario: Cycling without nested checkboxes {#CS-018}
+
+- GIVEN nested checkboxes are disabled
+- WHEN checkbox cycling is triggered on a parent checkbox
+- THEN only the current checkbox marker changes
+
 ### Requirement: Propagate nested checkbox state
 
 The plugin SHALL update related parent and child checkboxes when nested checkbox state changes.
@@ -71,6 +114,13 @@ The plugin SHALL update related parent and child checkboxes when nested checkbox
 - GIVEN a checkbox tree has a mix of checked and unchecked children
 - WHEN checkbox state is recomputed
 - THEN parent checkbox markers indicate partial completion
+
+#### Scenario: In-progress children mark parents partial {#CS-019}
+
+- GIVEN a parent checkbox has no checked children
+- AND at least one child checkbox has a partial marker
+- WHEN parent checkbox state is updated from its children
+- THEN the parent checkbox uses the first partial marker
 
 ### Requirement: Recompute checkbox state
 

@@ -982,6 +982,7 @@ local function checkbox_tree(first, last)
         table.remove(stack)
       end
       if #stack > 0 then
+        item.parent = stack[#stack]
         table.insert(stack[#stack].children, item)
       end
       table.insert(stack, item)
@@ -1008,21 +1009,33 @@ local function partial_marker(markers, checked, total)
   return markers[index]
 end
 
+local function recompute_parent(item)
+  local checked = 0
+  local in_progress = false
+  for _, child in ipairs(item.children) do
+    local state = checkbox_state(child.checkbox)
+    if state == 'checked' then
+      checked = checked + 1
+    elseif state == 'partial' then
+      in_progress = true
+    end
+  end
+
+  local markers = item.checkbox.markers
+  local marker = partial_marker(markers, checked, #item.children)
+  if checked == 0 and in_progress and #markers > 2 then
+    marker = markers[2]
+  end
+  item.checkbox.marker = marker
+  item.checkbox.index = checkbox_marker_index(marker, markers)
+  set_checkbox_marker(item.lnum, item.bullet, item.checkbox, marker)
+end
+
 local function recompute_items(items)
   for index = #items, 1, -1 do
     local item = items[index]
     if #item.children > 0 then
-      local checked = 0
-      for _, child in ipairs(item.children) do
-        if checkbox_state(child.checkbox) == 'checked' then
-          checked = checked + 1
-        end
-      end
-
-      local marker = partial_marker(item.checkbox.markers, checked, #item.children)
-      item.checkbox.marker = marker
-      item.checkbox.index = checkbox_marker_index(marker, item.checkbox.markers)
-      set_checkbox_marker(item.lnum, item.bullet, item.checkbox, marker)
+      recompute_parent(item)
     elseif checkbox_state(item.checkbox) == 'partial' then
       local marker = item.checkbox.markers[1]
       item.checkbox.marker = marker
@@ -1093,6 +1106,43 @@ function M.toggle_checkbox()
     set_descendant_checkboxes(lnum, item.bullet, marker)
     local first, last = checkbox_range(lnum)
     recompute_items(checkbox_tree(first, last))
+  end
+end
+
+function M.cycle_checkbox()
+  local lnum = vim.api.nvim_win_get_cursor(0)[1]
+  local item = checkbox_item(lnum)
+  if not item or not item.checkbox then
+    return
+  end
+
+  local markers = item.checkbox.markers
+  local index = item.checkbox.index % #markers + 1
+  local marker = markers[index]
+  item.checkbox.marker = marker
+  item.checkbox.index = index
+  set_checkbox_marker(lnum, item.bullet, item.checkbox, marker)
+
+  if not config.options.nested_checkboxes then
+    return
+  end
+
+  -- Partial markers mean "in progress" for this item only, so children keep their state.
+  if checkbox_state(item.checkbox) ~= 'partial' then
+    set_descendant_checkboxes(lnum, item.bullet, marker)
+  end
+
+  -- Only ancestors are recomputed: recomputing the cycled item would override its new marker.
+  local first, last = checkbox_range(lnum)
+  for _, tree_item in ipairs(checkbox_tree(first, last)) do
+    if tree_item.lnum == lnum then
+      local parent = tree_item.parent
+      while parent do
+        recompute_parent(parent)
+        parent = parent.parent
+      end
+      return
+    end
   end
 end
 
