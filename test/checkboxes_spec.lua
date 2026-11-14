@@ -341,4 +341,168 @@ describe('checkboxes', function()
       }, helpers.get_lines())
     end)
   end)
+
+  describe('cycling checkboxes', function()
+    before_each(function()
+      helpers.reset_config()
+      require('bullets').setup { checkbox_markers = ' /x' }
+    end)
+
+    it('cycles to the next configured marker #CS-013', function()
+      helpers.new_buffer { '- [ ] task' }
+
+      vim.cmd 'CycleCheckbox'
+      assert.are.same({ '- [/] task' }, helpers.get_lines())
+
+      vim.cmd 'CycleCheckbox'
+      assert.are.same({ '- [x] task' }, helpers.get_lines())
+    end)
+
+    it('cycles with the plug mapping #CS-013', function()
+      helpers.new_buffer { '- [ ] task' }
+
+      helpers.feedkeys '<Plug>(bullets-cycle-checkbox)'
+
+      assert.are.same({ '- [/] task' }, helpers.get_lines())
+    end)
+
+    it('wraps from checked to unchecked #CS-014', function()
+      helpers.new_buffer { '- [x] done', '- [X] also done' }
+
+      helpers.feedkeys 'gg'
+      vim.cmd 'CycleCheckbox'
+      helpers.feedkeys 'j'
+      vim.cmd 'CycleCheckbox'
+
+      assert.are.same({ '- [ ] done', '- [ ] also done' }, helpers.get_lines())
+    end)
+
+    it('keeps children when cycling a parent to a partial marker #CS-015', function()
+      helpers.new_buffer {
+        '- [ ] parent',
+        '  - [ ] first child',
+        '  - [ ] second child',
+      }
+
+      helpers.feedkeys 'gg'
+      vim.cmd 'CycleCheckbox'
+
+      assert.are.same({
+        '- [/] parent',
+        '  - [ ] first child',
+        '  - [ ] second child',
+      }, helpers.get_lines())
+    end)
+
+    it('updates children when cycling a parent to checked or unchecked #CS-016', function()
+      helpers.new_buffer {
+        '- [/] parent',
+        '  - [/] first child',
+        '  - [ ] second child',
+      }
+
+      helpers.feedkeys 'gg'
+      vim.cmd 'CycleCheckbox'
+      assert.are.same({
+        '- [x] parent',
+        '  - [x] first child',
+        '  - [x] second child',
+      }, helpers.get_lines())
+
+      vim.cmd 'CycleCheckbox'
+      assert.are.same({
+        '- [ ] parent',
+        '  - [ ] first child',
+        '  - [ ] second child',
+      }, helpers.get_lines())
+    end)
+
+    it('updates ancestors when cycling a child #CS-017', function()
+      helpers.new_buffer {
+        '- [ ] grandparent',
+        '  - [ ] parent',
+        '    - [ ] first child',
+        '    - [ ] second child',
+        '  - [x] done sibling',
+      }
+
+      helpers.feedkeys 'gg2j'
+      vim.cmd 'CycleCheckbox'
+      vim.cmd 'CycleCheckbox'
+      assert.are.same({
+        '- [/] grandparent',
+        '  - [/] parent',
+        '    - [x] first child',
+        '    - [ ] second child',
+        '  - [x] done sibling',
+      }, helpers.get_lines())
+
+      helpers.feedkeys 'j'
+      vim.cmd 'CycleCheckbox'
+      vim.cmd 'CycleCheckbox'
+      assert.are.same({
+        '- [x] grandparent',
+        '  - [x] parent',
+        '    - [x] first child',
+        '    - [x] second child',
+        '  - [x] done sibling',
+      }, helpers.get_lines())
+    end)
+
+    it('only changes the current checkbox without nested checkboxes #CS-018', function()
+      require('bullets').setup { checkbox_markers = ' /x', nested_checkboxes = false }
+      helpers.new_buffer {
+        '- [ ] parent',
+        '  - [ ] child',
+      }
+
+      helpers.feedkeys 'gg'
+      vim.cmd 'CycleCheckbox'
+      vim.cmd 'CycleCheckbox'
+
+      assert.are.same({
+        '- [x] parent',
+        '  - [ ] child',
+      }, helpers.get_lines())
+    end)
+
+    it('marks a parent partial when a child is in progress #CS-019', function()
+      helpers.new_buffer {
+        '- [ ] parent',
+        '  - [ ] first child',
+        '  - [ ] second child',
+      }
+
+      helpers.feedkeys 'ggj'
+      vim.cmd 'CycleCheckbox'
+
+      assert.are.same({
+        '- [/] parent',
+        '  - [/] first child',
+        '  - [ ] second child',
+      }, helpers.get_lines())
+    end)
+
+    it('recomputes parents with in-progress children as partial #CS-019', function()
+      require('bullets').setup { checkbox_markers = ' .oOX' }
+      helpers.new_buffer {
+        '- [ ] grandparent',
+        '  - [ ] parent',
+        '    - [X] first child',
+        '    - [ ] second child',
+        '  - [ ] sibling',
+      }
+
+      helpers.feedkeys 'gg'
+      vim.cmd 'RecomputeCheckboxes'
+
+      assert.are.same({
+        '- [.] grandparent',
+        '  - [o] parent',
+        '    - [X] first child',
+        '    - [ ] second child',
+        '  - [ ] sibling',
+      }, helpers.get_lines())
+    end)
+  end)
 end)

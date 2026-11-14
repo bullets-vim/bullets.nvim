@@ -80,11 +80,18 @@ The plugin defines these commands:
 | `:RenumberList`        | Renumber the current list.               |
 | `:RenumberSelection`   | Renumber the selected range.             |
 | `:ToggleCheckbox`      | Toggle the checkbox on the current item. |
+| `:CycleCheckbox`       | Cycle the checkbox on the current item.  |
 | `:RecomputeCheckboxes` | Recompute nested checkbox states.        |
 | `:BulletDemote`        | Demote the current item.                 |
 | `:BulletPromote`       | Promote the current item.                |
 | `:BulletDemoteVisual`  | Demote the selected range.               |
 | `:BulletPromoteVisual` | Promote the selected range.              |
+
+`:CycleCheckbox` moves the checkbox through every marker in `checkbox_markers`, partial ones included, and wraps
+from checked back to unchecked. With `checkbox_markers = " /x"` it cycles `[ ]` → `[/]` → `[x]` → `[ ]`, which suits
+"in progress" tracking. When `nested_checkboxes` is enabled, cycling to checked or unchecked updates the children,
+cycling to a partial marker leaves them alone, and ancestors are recomputed. It has no default mapping; map
+`<Plug>(bullets-cycle-checkbox)` to use it.
 
 These selection commands are registered but not implemented yet: `:SelectCheckbox`,
 `:SelectCheckboxInside`, `:SelectBullet`, and `:SelectBulletText`.
@@ -114,6 +121,7 @@ The plugin also defines these `<Plug>` mappings for custom mappings:
 | `<Plug>(bullets-newline)`              | Insert, Normal         |
 | `<Plug>(bullets-renumber)`             | Normal, Visual         |
 | `<Plug>(bullets-toggle-checkbox)`      | Normal                 |
+| `<Plug>(bullets-cycle-checkbox)`       | Normal                 |
 | `<Plug>(bullets-recompute-checkboxes)` | Normal                 |
 | `<Plug>(bullets-demote)`               | Insert, Normal, Visual |
 | `<Plug>(bullets-promote)`              | Insert, Normal, Visual |
